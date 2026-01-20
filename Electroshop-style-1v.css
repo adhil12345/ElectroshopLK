@@ -1083,3 +1083,7 @@ span#modal-price {
   color: var(--primary);
   font-weight: 700;
 }
+
+div#modal-details-container {
+    margin: 0px 25px;
+}
