@@ -303,13 +303,18 @@ async function loadProducts() {
                 if (typeof img !== 'string' || (!img.startsWith('http') && !img.startsWith('data:'))) {
                     img = p.find(val => typeof val === 'string' && (val.startsWith('http') || val.startsWith('data:'))) || "";
                 }
+
+                // New Fields (Index 8 & 9)
+                const descImg = p[8] ? normalizeDriveUrl(p[8]) : "";
+                const longDesc = p[9] || "";
+
                 return {
                     id: p[0], name: p[1], price: p[2], image: normalizeDriveUrl(img),
-                    description: p[4], category: p[5], quantity: p[6], origin: p[7]
+                    description: p[4], category: p[5], quantity: p[6], origin: p[7],
+                    descriptionImage: descImg, longDescription: longDesc
                 };
             }
 
-            // Object format: very flexible key searching
             const findKey = (searchTerms) => {
                 const keys = Object.keys(p);
                 for (let term of searchTerms) {
@@ -331,6 +336,10 @@ async function loadProducts() {
             const description = findKey(['description', 'desc', 'info', 'about']) || '';
             const quantity = findKey(['quantity', 'qty', 'stock', 'count']) || 0;
             const origin = findKey(['origin', 'source', 'stocktype']) || 'local';
+
+            // New Fields
+            const descriptionImage = findKey(['descriptionImage', 'descImage', 'descImg']) || '';
+            const longDescription = findKey(['longDescription', 'longDesc', 'details']) || '';
 
             let originalPrice = priceRaw;
             let offerPrice = priceRaw;
@@ -358,7 +367,9 @@ async function loadProducts() {
                 gallery: rawImage,
                 category, description,
                 quantity: parseInt(quantity) || 0,
-                origin
+                origin,
+                descriptionImage: normalizeDriveUrl(String(descriptionImage)),
+                longDescription
             };
         }).map(p => {
             // Final check: if after all that it's still empty, use a placeholder
@@ -501,7 +512,34 @@ function openModal(product, pushState = true) {
         priceHtml = `<span class="price-old" style="font-size: 0.7em;">LKR ${product.originalPrice}</span> LKR ${product.price}`;
     }
     els.mPrice.innerHTML = priceHtml;
+    els.mPrice.innerHTML = priceHtml;
     els.mDesc.innerText = product.description || 'No description available.';
+
+    // Handle Long Description & Description Image
+    const detailsContainer = document.getElementById('modal-details-container');
+    if (detailsContainer) {
+        detailsContainer.innerHTML = ""; // Clear previous
+
+        if (product.longDescription) {
+            const p = document.createElement('p');
+            p.style.whiteSpace = "pre-wrap";
+            p.style.marginTop = "1rem";
+            p.style.color = "#444";
+            p.style.fontSize = "0.95rem";
+            p.innerText = product.longDescription;
+            detailsContainer.appendChild(p);
+        }
+
+        if (product.descriptionImage) {
+            const img = document.createElement('img');
+            img.src = product.descriptionImage;
+            img.style.width = "100%";
+            img.style.marginTop = "1rem";
+            img.style.borderRadius = "8px";
+            detailsContainer.appendChild(img);
+        }
+    }
+
     els.qtyInput.value = 1;
 
     // Gallery Thumbnails
