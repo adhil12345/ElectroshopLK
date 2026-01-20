@@ -35,6 +35,7 @@ const els = {
     // Modal els
     mImg: document.getElementById('modal-img'),
     mTitle: document.getElementById('modal-title'),
+    mBreadcrumb: document.getElementById('modal-breadcrumb'),
     mPrice: document.getElementById('modal-price'),
     mDesc: document.getElementById('modal-desc'),
     mTags: document.getElementById('modal-tags'),
@@ -493,6 +494,7 @@ function openModal(product, pushState = true) {
 
     els.mImg.src = imgArray[0] || "https://via.placeholder.com/600x400?text=" + encodeURIComponent(product.name);
     els.mTitle.innerText = product.name;
+    if (els.mBreadcrumb) els.mBreadcrumb.innerText = `Home / ${product.category} / ${product.name}`;
 
     let priceHtml = `LKR ${product.price}`;
     if (product.hasOffer) {
