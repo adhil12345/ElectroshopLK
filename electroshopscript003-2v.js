@@ -65,9 +65,15 @@ const els = {
     accNumDev: document.getElementById('acc-num-display'),
     bankBranchDev: document.getElementById('bank-branch-display'),
     bankWhatsappDev: document.getElementById('bank-whatsapp-display'),
+
+    // Color Selector
+    colorSelector: document.getElementById('color-selector-container'),
+    colorOptions: document.getElementById('color-options'),
+    selectedColorInfo: document.getElementById('selected-color-info'),
 };
 
 let currentModalProduct = null;
+let currentVariant = null;
 let currentQty = 1;
 
 // --- Init ---
@@ -304,14 +310,15 @@ async function loadProducts() {
                     img = p.find(val => typeof val === 'string' && (val.startsWith('http') || val.startsWith('data:'))) || "";
                 }
 
-                // New Fields (Index 8 & 9)
+                // New Fields (Index 8, 9, 10)
                 const descImg = p[8] ? normalizeDriveUrl(p[8]) : "";
                 const longDesc = p[9] || "";
+                const variants = p[10] || "";
 
                 return {
                     id: p[0], name: p[1], price: p[2], image: normalizeDriveUrl(img),
                     description: p[4], category: p[5], quantity: p[6], origin: p[7],
-                    descriptionImage: descImg, longDescription: longDesc
+                    descriptionImage: descImg, longDescription: longDesc, variants: variants
                 };
             }
 
@@ -340,6 +347,7 @@ async function loadProducts() {
             // New Fields
             const descriptionImage = findKey(['descriptionImage', 'descImage', 'descImg']) || '';
             const longDescription = findKey(['longDescription', 'longDesc', 'details']) || '';
+            const variants = findKey(['variants', 'colors', 'options', 'variations']) || '';
 
             let originalPrice = priceRaw;
             let offerPrice = priceRaw;
@@ -369,7 +377,8 @@ async function loadProducts() {
                 quantity: parseInt(quantity) || 0,
                 origin,
                 descriptionImage: normalizeDriveUrl(String(descriptionImage)),
-                longDescription
+                longDescription,
+                variants: String(variants)
             };
         }).map(p => {
             // Final check: if after all that it's still empty, use a placeholder
@@ -575,6 +584,74 @@ function openModal(product, pushState = true) {
         els.mShippingText.innerHTML = `Local Stock: <strong>3-7 Working Days</strong> island-wide.`;
     }
 
+    // --- Color Variants ---
+    currentVariant = null;
+    if (product.variants && product.variants.trim() !== "") {
+        els.colorSelector.style.display = 'block';
+        els.colorOptions.innerHTML = '';
+        els.selectedColorInfo.innerText = '';
+
+        const variantsList = product.variants.split(',').map(v => {
+            const parts = v.split(':');
+            return {
+                name: parts[0].trim(),
+                price: parts[1] ? parts[1].trim() : null
+            };
+        }).filter(v => v.name);
+
+        if (variantsList.length > 0) {
+            variantsList.forEach((v, idx) => {
+                const btn = document.createElement('div');
+                btn.className = 'color-picker-btn';
+                btn.innerText = v.name;
+
+                // Select first by default if you want, or none. Let's select none to force choice or first?
+                // Standard UI usually selects first.
+                if (idx === 0) {
+                    // auto-select first?
+                    // btn.classList.add('selected');
+                    // currentVariant = v;
+                    // updatePriceDisplay(v.price || product.price);
+                }
+
+                btn.onclick = () => {
+                    // Update UI
+                    document.querySelectorAll('.color-picker-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+
+                    // Update State
+                    currentVariant = v;
+
+                    // Update Price Display
+                    const finalPrice = v.price || product.price;
+                    let priceHtml = `LKR ${finalPrice}`;
+                    if (!v.price && product.hasOffer) {
+                        // Keep offer styling if using base price and base has offer
+                        priceHtml = `<span class="price-old" style="font-size: 0.7em;">LKR ${product.originalPrice}</span> LKR ${product.price}`;
+                    } else if (v.price) {
+                        // If specific price, show just that (assuming no separate offer price for variants yet)
+                        priceHtml = `LKR ${finalPrice}`;
+                    }
+                    els.mPrice.innerHTML = priceHtml;
+
+                    // Show selected info
+                    els.selectedColorInfo.innerHTML = `Selected: <strong>${v.name}</strong>` + (v.price ? ` - LKR ${v.price}` : '');
+                };
+
+                els.colorOptions.appendChild(btn);
+            });
+
+            // Auto-select first variant
+            if (els.colorOptions.firstChild) {
+                els.colorOptions.firstChild.click();
+            }
+        } else {
+            els.colorSelector.style.display = 'none';
+        }
+    } else {
+        els.colorSelector.style.display = 'none';
+    }
+
     if (isOOS) {
         els.addToCartBtn.disabled = true;
         els.buyNowBtn.disabled = true;
@@ -635,12 +712,43 @@ window.openModalById = function (id) {
 // ... Cart Logic (Standard) ...
 function addToCart(product, qty) {
     if (product.quantity <= 0) return;
-    const existing = cart.find(item => item.id === product.id);
-    if (existing) existing.qty += qty; else cart.push({ ...product, qty: qty });
+
+    // Determine finalized price and name based on variant
+    let finalPrice = product.price;
+    let finalName = product.name;
+    let variantName = null;
+
+    if (currentVariant) {
+        if (currentVariant.price) finalPrice = currentVariant.price;
+        variantName = currentVariant.name;
+        finalName = `${product.name} (${variantName})`;
+    }
+
+    // Check availability (optional: ideally we track stock per variant but here we track per product id total)
+
+    // Unique ID for Cart: ProductID + Variant
+    // If we use just ID, adding Red then Blue would update Red qty instead of adding Blue.
+    const cartItemId = variantName ? `${product.id}-${variantName}` : String(product.id);
+
+    const existing = cart.find(item => item.cartItemId === cartItemId);
+
+    if (existing) {
+        existing.qty += qty;
+    } else {
+        cart.push({
+            ...product,
+            id: product.id, // Keep original ID for reference
+            cartItemId: cartItemId, // New key for uniqueness
+            name: finalName,
+            price: finalPrice,
+            variant: variantName,
+            qty: qty
+        });
+    }
     saveCart();
     updateCartUI();
 }
-function removeFromCart(id) { cart = cart.filter(item => item.id !== id); saveCart(); updateCartUI(); }
+function removeFromCart(cartItemId) { cart = cart.filter(item => (item.cartItemId || String(item.id)) !== cartItemId); saveCart(); updateCartUI(); }
 function saveCart() { localStorage.setItem('electroshop_cart', JSON.stringify(cart)); }
 function updateCartUI() {
     const totalCount = cart.reduce((acc, item) => acc + item.qty, 0);
@@ -655,12 +763,18 @@ function updateCartUI() {
     }
     let subtotal = 0;
     cart.forEach(item => {
+        // Migration support for old cart items without cartItemId
+        if (!item.cartItemId) item.cartItemId = String(item.id);
+
         const itemTotal = parseFloat(item.price) * item.qty;
         subtotal += itemTotal;
         const div = document.createElement('div');
         div.className = 'cart-item';
-        div.innerHTML = `<img src="${item.image}" alt="${item.name}"><div class="cart-item-info"><div class="cart-title">${item.name}</div><div class="cart-price">LKR ${item.price} x ${item.qty}</div><div class="remove-btn">Remove</div></div><div style="font-weight:bold;">${itemTotal.toFixed(2)}</div>`;
-        div.querySelector('.remove-btn').addEventListener('click', () => removeFromCart(item.id));
+        // Display Variant Name if it exists
+        const displayName = item.name;
+
+        div.innerHTML = `<img src="${item.image}" alt="${item.name}"><div class="cart-item-info"><div class="cart-title">${displayName}</div><div class="cart-price">LKR ${item.price} x ${item.qty}</div><div class="remove-btn">Remove</div></div><div style="font-weight:bold;">${itemTotal.toFixed(2)}</div>`;
+        div.querySelector('.remove-btn').addEventListener('click', () => removeFromCart(item.cartItemId));
         els.cartItems.appendChild(div);
     });
     const total = subtotal + DELIVERY_CHARGE;
