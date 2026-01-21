@@ -600,22 +600,13 @@ function openModal(product, pushState = true) {
         colorContainer.innerHTML = '<strong>Select Color:</strong><div class="color-options" style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.5rem;"></div>';
 
         const optionsDiv = colorContainer.querySelector('.color-options');
-
         const colorList = product.colors.split(',').map(c => {
-            // Try parse Name:Price(Url)
-            const match = c.trim().match(/^([^:]+):([\d.]+)(?:\((.*)\))?$/);
-            if (match) {
-                return { name: match[1], price: parseFloat(match[2]), img: match[3] ? normalizeDriveUrl(match[3]) : null };
-            }
             const parts = c.split(':');
             return {
                 name: parts[0].trim(),
-                price: parts[1] ? parseFloat(parts[1].trim()) : null,
-                img: null
+                price: parts[1] ? parseFloat(parts[1].trim()) : null
             };
         }).filter(c => c.name);
-
-        const defaultMainImg = imgArray[0] || "https://via.placeholder.com/600x400?text=" + encodeURIComponent(product.name);
 
         colorList.forEach((c, idx) => {
             const btn = document.createElement('button');
@@ -655,14 +646,6 @@ function openModal(product, pushState = true) {
                     els.mPrice.innerHTML = priceHtml;
                     currentModalProduct.currentPrice = product.price; // or original offer
                 }
-
-                // Update Image
-                if (c.img) {
-                    els.mImg.src = c.img;
-                } else {
-                    els.mImg.src = defaultMainImg;
-                }
-
                 currentModalProduct.selectedColor = c.name;
             };
 
