@@ -1,7 +1,7 @@
 
 // --- Configuration ---
 // PASTE YOUR GOOGLE WEB APP URL HERE AFTER DEPLOYING
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbybVPHYv0i-WuBCjqX0cdBSpTAe9hm7pimuN_JIYrFgNwhw8FUwHTqP2oIpcPs7DxKTGg/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzS3GDgo3nQL5cCMHdW5Hory7rAyJOgbtWnjk3SRTkgpQYu9W2jpcOC5FBH2GROqRYzsw/exec';
 // Example: https://script.google.com/macros/s/AKfycb.../exec
 
 let DELIVERY_CHARGE = 350; // LKR default (will be updated by settings)
@@ -304,14 +304,17 @@ async function loadProducts() {
                     img = p.find(val => typeof val === 'string' && (val.startsWith('http') || val.startsWith('data:'))) || "";
                 }
 
-                // New Fields (Index 8 & 9)
+                // New Fields (Index 8, 9, 10, 11, 12, 13)
                 const descImg = p[8] ? normalizeDriveUrl(p[8]) : "";
                 const longDesc = p[9] || "";
+                const brand = p[12] || "";
+                const rating = p[13] || "5.0";
 
                 return {
                     id: p[0], name: p[1], price: p[2], image: normalizeDriveUrl(img),
                     description: p[4], category: p[5], quantity: p[6], origin: p[7],
-                    descriptionImage: descImg, longDescription: longDesc, colors: p[10] || ""
+                    descriptionImage: descImg, longDescription: longDesc,
+                    colors: p[10] || "", costPrice: p[11], brand, rating
                 };
             }
 
@@ -341,6 +344,8 @@ async function loadProducts() {
             const descriptionImage = findKey(['descriptionImage', 'descImage', 'descImg']) || '';
             const longDescription = findKey(['longDescription', 'longDesc', 'details']) || '';
             const colors = findKey(['colors', 'variants', 'colour']) || '';
+            const brand = findKey(['brand', 'brandname']) || '';
+            const rating = findKey(['rating', 'starrating', 'stars']) || '5.0';
 
             let originalPrice = priceRaw;
             let offerPrice = priceRaw;
@@ -371,7 +376,9 @@ async function loadProducts() {
                 origin,
                 descriptionImage: normalizeDriveUrl(String(descriptionImage)),
                 longDescription,
-                colors
+                colors,
+                brand,
+                rating
             };
         }).map(p => {
             // Final check: if after all that it's still empty, use a placeholder
@@ -476,6 +483,7 @@ function renderProducts(list) {
         <img class="p-image" src="${p.image}" alt="${p.name}" loading="lazy">
       </div>
       <div class="p-details">
+        ${p.brand ? `<div class="p-brand" style="font-size:0.7rem; color:#888; text-transform:uppercase; margin-bottom:2px;">${p.brand}</div>` : ''}
         <h3 class="p-title">${p.name}</h3>
         <div class="p-price-container">
           ${p.hasOffer ? `<span class="price-old">LKR ${p.originalPrice}</span>` : ''}
@@ -517,28 +525,81 @@ function openModal(product, pushState = true) {
     els.mPrice.innerHTML = priceHtml;
     els.mDesc.innerText = product.description || 'No description available.';
 
+    // Star Rating Display
+    const ratingNum = parseFloat(product.rating || 5);
+    const starCount = Math.min(5, Math.max(0, ratingNum));
+    const fullStars = Math.floor(starCount);
+    const halfStar = starCount % 1 >= 0.5;
+    let starsHtml = '<span style="color:#f59e0b; font-size:1rem;">';
+    for (let i = 0; i < fullStars; i++) starsHtml += '⭐';
+    if (halfStar && fullStars < 5) starsHtml += '⭐'; // Using full star for simplicity or could use a half-star char if font supports
+    starsHtml += `</span> <span style="font-size:0.8rem; color:#666;">Ratings ${product.rating || '5.0'}</span>`;
+
+    const existingRating = els.modal.querySelector('.m-rating-row');
+    if (existingRating) existingRating.remove();
+    const ratingDiv = document.createElement('div');
+    ratingDiv.className = 'm-rating-row';
+    ratingDiv.style.marginBottom = '0.5rem';
+    ratingDiv.innerHTML = starsHtml;
+    els.mTitle.parentNode.insertBefore(ratingDiv, els.mTitle.nextSibling);
+
+    // Brand Display
+    const existingBrand = els.modal.querySelector('.m-brand-row');
+    if (existingBrand) existingBrand.remove();
+    if (product.brand) {
+        const brandDiv = document.createElement('div');
+        brandDiv.className = 'm-brand-row';
+        brandDiv.style.fontSize = '0.85rem';
+        brandDiv.style.color = '#666';
+        brandDiv.style.marginBottom = '1rem';
+        brandDiv.innerHTML = `Brand: <span style="color:var(--primary); font-weight:600;">${product.brand}</span> | <a href="#" onclick="event.preventDefault(); window.searchByBrand('${product.brand}')" style="color:var(--primary); text-decoration:none;">More from ${product.brand}</a>`;
+        els.mPrice.parentElement.insertBefore(brandDiv, els.mPrice.parentElement.firstChild);
+    }
     // Handle Long Description & Description Image
     const detailsContainer = document.getElementById('modal-details-container');
     if (detailsContainer) {
-        detailsContainer.innerHTML = ""; // Clear previous
+        // Find user-defined slots
+        const descSlot = detailsContainer.querySelector('.p-long-description');
+        const imgSlot = detailsContainer.querySelector('.p-long-description-image');
 
-        if (product.longDescription) {
-            const p = document.createElement('p');
-            p.style.whiteSpace = "pre-wrap";
-            p.style.marginTop = "1rem";
-            p.style.color = "#444";
-            p.style.fontSize = "0.95rem";
-            p.innerText = product.longDescription;
-            detailsContainer.appendChild(p);
+        if (descSlot) {
+            descSlot.innerHTML = "";
+            if (product.longDescription) {
+                const p = document.createElement('p');
+                p.style.whiteSpace = "pre-wrap";
+                p.style.marginTop = "1rem";
+                p.style.color = "#444";
+                p.style.fontSize = "0.95rem";
+                p.innerText = product.longDescription;
+                descSlot.appendChild(p);
+            }
         }
 
-        if (product.descriptionImage) {
-            const img = document.createElement('img');
-            img.src = product.descriptionImage;
-            img.style.width = "100%";
-            img.style.marginTop = "1rem";
-            img.style.borderRadius = "8px";
-            detailsContainer.appendChild(img);
+        if (imgSlot) {
+            imgSlot.innerHTML = "";
+            if (product.descriptionImage) {
+                const img = document.createElement('img');
+                img.src = product.descriptionImage;
+                img.style.width = "100%";
+                img.style.marginTop = "1rem";
+                img.style.borderRadius = "8px";
+                imgSlot.appendChild(img);
+            }
+        }
+
+        // Fallback: If user didn't add the inner divs yet (or cleared them), use old logic
+        if (!descSlot && !imgSlot) {
+            detailsContainer.innerHTML = "";
+            if (product.longDescription) { /* ... same creation logic ... */
+                const p = document.createElement('p');
+                p.style.whiteSpace = "pre-wrap"; p.style.marginTop = "1rem"; p.style.color = "#444"; p.style.fontSize = "0.95rem";
+                p.innerText = product.longDescription; detailsContainer.appendChild(p);
+            }
+            if (product.descriptionImage) {
+                const img = document.createElement('img');
+                img.src = product.descriptionImage; img.style.width = "100%"; img.style.marginTop = "1rem"; img.style.borderRadius = "8px";
+                detailsContainer.appendChild(img);
+            }
         }
     }
 
@@ -702,6 +763,14 @@ window.openModalById = function (id) {
     if (p) openModal(p);
 };
 
+// Helper for Brand Search
+window.searchByBrand = function (brand) {
+    els.searchInput.value = brand;
+    handleSearch();
+    closeModal();
+    els.grid.scrollIntoView({ behavior: 'smooth' });
+};
+
 // ... Cart Logic (Standard) ...
 function addToCart(product, qty) {
     if (product.quantity <= 0) return;
@@ -861,4 +930,3 @@ function closeSuccessModal() { els.successModal.classList.add('hidden'); els.ove
 
 // Start
 init();
-
