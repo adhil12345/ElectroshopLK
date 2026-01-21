@@ -864,6 +864,8 @@ async function handleCheckout(e) {
             subtotal: els.cartSubtotal.innerText.replace('LKR ', '').trim(),
             delivery_charge: DELIVERY_CHARGE,
             total_price: totalText,
+            items: cart.map(i => ({ id: i.id, qty: i.qty, name: i.name })), // Send items array for cost calculation
+            email: fd.get('cust-email'), // Alias for compatibility
             items_summary: cart.map(i => `${i.qty} x ${i.name} @ LKR ${i.price}`).join(',\n')
         };
 
