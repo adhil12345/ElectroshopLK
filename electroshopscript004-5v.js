@@ -1,7 +1,7 @@
 
 // --- Configuration ---
 // PASTE YOUR GOOGLE WEB APP URL HERE AFTER DEPLOYING
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz9Kp_qTwytlwcv_XrzIL61-K1Ni3SZEI9ES5rD8nS26Hxh896xs1L-BavfowI4E2yaaQ/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzS3GDgo3nQL5cCMHdW5Hory7rAyJOgbtWnjk3SRTkgpQYu9W2jpcOC5FBH2GROqRYzsw/exec';
 // Example: https://script.google.com/macros/s/AKfycb.../exec
 
 let DELIVERY_CHARGE = 350; // LKR default (will be updated by settings)
@@ -864,6 +864,7 @@ async function handleCheckout(e) {
             subtotal: els.cartSubtotal.innerText.replace('LKR ', '').trim(),
             delivery_charge: DELIVERY_CHARGE,
             total_price: totalText,
+            items: cart.map(i => ({ id: i.id, qty: i.qty })),
             items_summary: cart.map(i => `${i.qty} x ${i.name} @ LKR ${i.price}`).join(',\n')
         };
 
