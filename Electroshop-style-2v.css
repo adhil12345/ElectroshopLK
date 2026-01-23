@@ -49,6 +49,10 @@ body {
   cursor: pointer;
   transition: transform 0.1s, opacity 0.2s;
 }
+div#tab-orders {
+    width: fit-content;
+}
+
 
 .btn-primary {
   background: var(--primary);
@@ -1087,3 +1091,4 @@ span#modal-price {
 div#modal-details-container {
     margin: 0px 25px;
 }
+
