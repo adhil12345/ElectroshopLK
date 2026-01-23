@@ -1,7 +1,7 @@
 
 // --- Configuration ---
 // PASTE YOUR GOOGLE WEB APP URL HERE AFTER DEPLOYING
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyImGuRlc6cc-7rfudyH1-GEAvAIqrAXVjQCFZZSmraCxmaGZmrM9_4ehfRmOxm9KVWpg/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyl36eBKICbkNyYX0K-G-tyynbMZD_pTAuXRasSKvzuSWHw7YOs_tN1RLUA0XQP7sDvrQ/exec';
 // Example: https://script.google.com/macros/s/AKfycb.../exec
 
 let DELIVERY_CHARGE = 350; // LKR default (will be updated by settings)
@@ -876,13 +876,22 @@ async function handleCheckout(e) {
             });
 
             // Try to read response
+            // Try to read response
             try {
                 const result = await res.json();
+
+                // Version Check
+                if (result.backend_version === 'v2.0-FIXED') {
+                    // console.log("Backend is up to date");
+                } else {
+                    alert("Warning: Your Google Cloud Script is outdated! Please Redeploy the script in the Apps Script Editor.");
+                }
+
                 if (result.status !== 'success') {
                     throw new Error(result.message || 'Database error');
                 }
             } catch (jsonErr) {
-                console.warn('Response parsing error (common with GAS CORS), checking Reference ID:', orderId);
+                console.warn('Response parsing error', jsonErr);
             }
         }
 
@@ -946,4 +955,3 @@ function closeSuccessModal() { els.successModal.classList.add('hidden'); els.ove
 
 // Start
 init();
-
