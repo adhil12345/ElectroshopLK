@@ -917,7 +917,23 @@ const infoContent = {
     contact: 'Contact Us Loading...',
     privacy: 'Privacy Policy Loading...',
     shipping: 'Shipping Policy Loading...',
-    returnpolicy: 'Return Policy Loading...'
+    returnpolicy: `<h3>Return Policy</h3>
+<p>At ElectroShop LK, we want you to be completely satisfied with your purchase. If you change your mind, we offer a 14-day return window tailored for your convenience.</p>
+<h4>14-Day Change of Mind</h4>
+<p>You have 14 days from the date of receipt to return an item if you simply change your mind. To be eligible for a return, your item must be:</p>
+<ul>
+  <li>Unused and in the same condition that you received it.</li>
+  <li>In the original packaging with all seals intact.</li>
+  <li>Accompanied by the receipt or proof of purchase.</li>
+</ul>
+<h4>Postal Returns Only</h4>
+<p>Please note that all returns must be made via post. We do not accept in-person returns at our warehouse or office locations. Please contact our support team to receive the return mailing address and instructions.</p>
+<h4>Conditions</h4>
+<ul>
+  <li>Return shipping costs are the responsibility of the customer unless the item is defective or incorrect.</li>
+  <li>Items that are damaged, used, or missing parts for reasons not due to our error may not be accepted or may incur a restocking fee.</li>
+  <li>Refunds will be processed to the original method of payment within 7-10 business days after we receive and inspect your return.</li>
+</ul>`
 };
 function openInfoPage(page) {
     els.infoTitle.innerText = page.charAt(0).toUpperCase() + page.slice(1);
