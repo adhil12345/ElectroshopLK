@@ -1,7 +1,7 @@
 
 // --- Configuration ---
 // PASTE YOUR GOOGLE WEB APP URL HERE AFTER DEPLOYING
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyOz1sdNyKC8ydRS8KnA6cMj5tNJ2lmjkp2XeYjjF-ky6XbYRRXHW7noke8Rq2HsUCDgA/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyVDKS-Bd5mk3yA7_UCKc9TsIPth7wGy2eOtCLLMz_oVjJazQaXrcgcwpwF0Ea68DXKzQ/exec';
 // Example: https://script.google.com/macros/s/AKfycb.../exec
 
 let DELIVERY_CHARGE = 350; // LKR default (will be updated by settings)
@@ -27,6 +27,19 @@ const els = {
     catDock: document.getElementById('category-dock'),
     logoText: document.getElementById('logo-text'),
     siteTitle: document.getElementById('site-title'),
+
+    // Auth & User
+    userBtn: document.getElementById('user-btn'),
+    authModal: document.getElementById('auth-modal'),
+    closeAuthModal: document.getElementById('close-auth-modal'),
+    accountModal: document.getElementById('account-modal'),
+    closeAccountModal: document.getElementById('close-account-modal'),
+    loginForm: document.getElementById('login-form'),
+    registerForm: document.getElementById('register-form'),
+
+    // Auth Sections
+    loginSection: document.getElementById('login-section'),
+    registerSection: document.getElementById('register-section'),
 
     // Search
     searchInput: document.getElementById('search-input'),
@@ -69,12 +82,14 @@ const els = {
 
 let currentModalProduct = null;
 let currentQty = 1;
+let currentUser = JSON.parse(localStorage.getItem('electro_customer')) || null;
 
 // --- Init ---
 async function init() {
     bindEvents();
     updateCartUI();
     loadSettings();
+    checkUserSession(); // Check if user is logged in
     await loadProducts();
 
     // Check for product ID in URL
@@ -103,10 +118,49 @@ function bindEvents() {
     document.getElementById('close-product-modal').addEventListener('click', closeModal);
     document.querySelector('.close-info-modal').addEventListener('click', closeInfoModal);
 
+    // Auth Events
+    els.userBtn.addEventListener('click', () => {
+        if (currentUser) openAccountModal();
+        else openAuthModal();
+    });
+    els.closeAuthModal.addEventListener('click', () => {
+        els.authModal.classList.add('hidden');
+        els.overlay.classList.add('hidden');
+    });
+    els.closeAccountModal.addEventListener('click', () => {
+        els.accountModal.classList.add('hidden');
+        els.overlay.classList.add('hidden');
+    });
+
+    // Login / Register Submit
+    els.loginForm.addEventListener('submit', handleCustomerLogin);
+    els.registerForm.addEventListener('submit', handleCustomerRegister);
+
+    // Expose toggleAuthMode globally
+    window.toggleAuthMode = (mode) => {
+        if (mode === 'register') {
+            els.loginSection.classList.add('hidden');
+            els.registerSection.classList.remove('hidden');
+        } else {
+            els.registerSection.classList.add('hidden');
+            els.loginSection.classList.remove('hidden');
+        }
+    };
+
+    window.logoutCustomer = () => {
+        localStorage.removeItem('electro_customer');
+        currentUser = null;
+        els.accountModal.classList.add('hidden');
+        els.overlay.classList.add('hidden');
+        alert("Logged out successfully");
+    };
+
     els.overlay.addEventListener('click', () => {
         closeModal();
         closeInfoModal();
         els.cartDrawer.classList.add('hidden');
+        els.authModal.classList.add('hidden');
+        els.accountModal.classList.add('hidden');
         els.overlay.classList.add('hidden');
     });
 
@@ -161,6 +215,157 @@ function bindEvents() {
     });
 
     els.checkoutForm.addEventListener('submit', handleCheckout);
+}
+
+function openAuthModal() {
+    els.authModal.classList.remove('hidden');
+    els.overlay.classList.remove('hidden');
+}
+
+function openAccountModal() {
+    els.accountModal.classList.remove('hidden');
+    els.overlay.classList.remove('hidden');
+
+    // Populate UI
+    if (currentUser) {
+        document.getElementById('user-initial').innerText = currentUser.name.charAt(0).toUpperCase();
+        document.getElementById('user-name-display').innerText = currentUser.name;
+        document.getElementById('user-id-display').innerText = currentUser.id;
+        document.getElementById('user-email-display').innerText = currentUser.email;
+        document.getElementById('user-phone-display').innerText = currentUser.phone || '';
+        document.getElementById('user-addr-display').innerText = currentUser.address || '';
+
+        loadCustomerOrders();
+    }
+}
+
+function checkUserSession() {
+    if (currentUser) {
+        // Pre-fill checkout if form exists
+        const nameIn = els.checkoutForm.querySelector('[name="cust-name"]');
+        const emailIn = els.checkoutForm.querySelector('[name="cust-email"]');
+        const phoneIn = els.checkoutForm.querySelector('[name="cust-phone"]');
+        const addrIn = els.checkoutForm.querySelector('[name="cust-address"]');
+
+        if (nameIn) nameIn.value = currentUser.name;
+        if (emailIn) emailIn.value = currentUser.email;
+        if (phoneIn) phoneIn.value = currentUser.phone || '';
+        if (addrIn) addrIn.value = currentUser.address || '';
+    }
+}
+
+async function handleCustomerLogin(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button');
+    const originalText = btn.innerText;
+    btn.innerText = "Logging in...";
+    btn.disabled = true;
+
+    const email = document.getElementById('login-email').value;
+    const pass = document.getElementById('login-password').value;
+
+    try {
+        const res = await fetch(WEB_APP_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'login_customer', email, password: pass })
+        });
+        const data = await res.json();
+
+        if (data.status === 'success') {
+            currentUser = data.customer;
+            localStorage.setItem('electro_customer', JSON.stringify(currentUser));
+            alert("Welcome back, " + currentUser.name + "!");
+            els.authModal.classList.add('hidden');
+            els.overlay.classList.add('hidden');
+            checkUserSession(); // Update checkout form
+        } else {
+            alert("Login Failed: " + data.message);
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Connection Error. Please try again.");
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
+}
+
+async function handleCustomerRegister(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button');
+    const originalText = btn.innerText;
+    btn.innerText = "Creating Account...";
+    btn.disabled = true;
+
+    const formData = {
+        name: document.getElementById('reg-name').value,
+        email: document.getElementById('reg-email').value,
+        phone: document.getElementById('reg-phone').value,
+        address: document.getElementById('reg-address').value,
+        password: document.getElementById('reg-password').value
+    };
+
+    try {
+        const res = await fetch(WEB_APP_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'register_customer', data: formData })
+        });
+        const data = await res.json();
+
+        if (data.status === 'success') {
+            alert("Account Created! You can now login.");
+            window.toggleAuthMode('login'); // Switch to login view
+        } else {
+            alert("Registration Failed: " + data.message);
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Connection Error. Please try again.");
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
+}
+
+async function loadCustomerOrders() {
+    const listDiv = document.getElementById('customer-orders-list');
+    listDiv.innerHTML = '<div style="text-align:center; padding:1rem; color:#888;">Fetching orders...</div>';
+
+    try {
+        const res = await fetch(WEB_APP_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'get_customer_orders', customerId: currentUser.email })
+        });
+        // Note: passing email as ID fallback as discussed in backend logic
+
+        const data = await res.json();
+
+        if (data.status === 'success' && data.data.length > 0) {
+            listDiv.innerHTML = data.data.map(o => `
+              <div style="background:#f9f9f9; padding:1rem; border-radius:8px; border:1px solid #eee;">
+                 <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+                    <span style="font-weight:700;">#${o.orderId || o.Order_ID}</span>
+                    <span class="badge" style="font-size:0.75rem; background:${o.status === 'Delivered' ? '#10b981' : '#f59e0b'}; color:white; padding:2px 6px; border-radius:4px;">${o.status}</span>
+                 </div>
+                 <div style="font-size:0.85rem; color:#666; margin-bottom:0.5rem;">
+                    ${new Date(o.date).toLocaleDateString()}
+                 </div>
+                 <div style="font-size:0.9rem; margin-bottom:0.5rem;">
+                    ${o.items ? o.items.substring(0, 60) + '...' : 'Items info unavailable'}
+                 </div>
+                 <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #eee; pt-2; mt-2;">
+                    <span style="font-weight:700;">LKR ${o.total}</span>
+                    <button style="font-size:0.8rem; color:var(--primary); background:none; border:none; cursor:pointer;" onclick="alert('Tracking: ${o.tracking || 'Pending'}\\nCourier: ${o.courier || 'Pending'}')">Track Order</button>
+                 </div>
+              </div>
+            `).join('');
+        } else {
+            listDiv.innerHTML = '<div style="text-align:center; padding:2rem; color:#888;">No orders found.</div>';
+        }
+    } catch (err) {
+        console.warn(err);
+        listDiv.innerHTML = '<div style="text-align:center; color:red;">Failed to load history.</div>';
+    }
 }
 
 function handleSearch() {
@@ -903,7 +1108,7 @@ async function handleCheckout(e) {
                 const result = await res.json();
 
                 // Version Check
-                if (result.backend_version === 'v2.1') {
+                if (result.backend_version === 'v2.2') {
                     // console.log("Backend is up to date");
                 } else {
                     alert("Warning: Your Google Cloud Script is outdated! Please Redeploy the script in the Apps Script Editor.");
