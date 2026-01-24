@@ -1,7 +1,8 @@
 
 // --- Configuration ---
 // PASTE YOUR GOOGLE WEB APP URL HERE AFTER DEPLOYING
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyVDKS-Bd5mk3yA7_UCKc9TsIPth7wGy2eOtCLLMz_oVjJazQaXrcgcwpwF0Ea68DXKzQ/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxaS71YKiFdbjFUJBAxZ4MUVOBruEwiVWq3wZ_EqLyQsvKnUo2id0uQQ6mmY6py_PfKMw/exec';
+const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID_HERE.apps.googleusercontent.com"; // User must replace this
 // Example: https://script.google.com/macros/s/AKfycb.../exec
 
 let DELIVERY_CHARGE = 350; // LKR default (will be updated by settings)
@@ -90,6 +91,7 @@ async function init() {
     updateCartUI();
     loadSettings();
     checkUserSession(); // Check if user is logged in
+    initGoogleLogin(); // Init Google Sign-In
     await loadProducts();
 
     // Check for product ID in URL
@@ -217,7 +219,91 @@ function bindEvents() {
     els.checkoutForm.addEventListener('submit', handleCheckout);
 }
 
+function initGoogleLogin() {
+    if (typeof google === 'undefined') return; // Library not loaded
+
+    try {
+        google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleGoogleCredential
+        });
+
+        // Render Button if container exists
+        const btnContainer = document.getElementById('google-btn-container');
+        if (btnContainer) {
+            google.accounts.id.renderButton(
+                btnContainer,
+                { theme: "outline", size: "large", width: 350 }  // customization attributes
+            );
+        }
+    } catch (e) {
+        console.warn("Google Sign-In Init Failed (Check Client ID)", e);
+    }
+}
+
+async function handleGoogleCredential(response) {
+    // Decode JWT to get user info
+    const responsePayload = parseJwt(response.credential);
+    console.log("ID: " + responsePayload.sub);
+    console.log('Full Name: ' + responsePayload.name);
+    console.log('Given Name: ' + responsePayload.given_name);
+    console.log('Family Name: ' + responsePayload.family_name);
+    console.log("Image URL: " + responsePayload.picture);
+    console.log("Email: " + responsePayload.email);
+
+    // Send to Backend to "Login or Register"
+    try {
+        const res = await fetch(WEB_APP_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'google_auth_customer',
+                email: responsePayload.email,
+                name: responsePayload.name,
+                picture: responsePayload.picture
+            })
+        });
+        const data = await res.json();
+
+        if (data.status === 'success') {
+            currentUser = data.customer;
+            localStorage.setItem('electro_customer', JSON.stringify(currentUser));
+
+            checkUserSession(); // Update checkout forms
+
+            // Close modals
+            els.authModal.classList.add('hidden');
+            els.overlay.classList.add('hidden');
+
+            if (data.isNewUser) {
+                alert("Account created with Google! Welcome " + currentUser.name);
+            } else {
+                alert("Welcome back, " + currentUser.name + "!");
+            }
+
+        } else {
+            alert("Google Login Error: " + data.message);
+        }
+    } catch (err) {
+        console.error("Google Auth Backend Error", err);
+        alert("Server Connection Failed");
+    }
+}
+
+function parseJwt(token) {
+    try {
+        var base64Url = token.split('.')[1];
+        var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+    } catch (e) {
+        return {};
+    }
+}
+
 function openAuthModal() {
+    // ... existing functions ...
     els.authModal.classList.remove('hidden');
     els.overlay.classList.remove('hidden');
 }
