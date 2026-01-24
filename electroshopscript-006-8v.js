@@ -1382,7 +1382,7 @@ function populateProfileUI(user) {
 // --- Info Pages ---
 
 
-}
+
 
 
 
