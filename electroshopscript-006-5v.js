@@ -1,5 +1,4 @@
 
-// --- Configuration ---
 // PASTE YOUR GOOGLE WEB APP URL HERE AFTER DEPLOYING
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbySZdIzAv8oe_HKNpl6h39SAN4rD1WHCXSl2lGzHxOH4i6ZC-VQsmF-M0ienBsVHQKmcg/exec';
 const GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com"; // User must replace this
@@ -1275,7 +1274,7 @@ async function handleCheckout(e) {
             order_id: orderId,
             order_date: new Date().toLocaleString(),
             customer_name: fd.get('cust-name'),
-            customer_email: fd.get('cust-email'), // ✅ Keep this
+            customer_email: fd.get('cust-email'),
             contact_number: fd.get('cust-phone'),
             whatsapp_number: fd.get('cust-phone'),
             full_address: fd.get('cust-address'),
@@ -1285,7 +1284,8 @@ async function handleCheckout(e) {
             subtotal: els.cartSubtotal.innerText.replace('LKR ', '').trim(),
             delivery_charge: DELIVERY_CHARGE,
             total_price: totalText,
-            items_summary: cart.map(i => `(${i.id}) ${i.qty} x ${i.name} @ LKR ${i.price}`).join(',\n')
+            items_summary: cart.map(i => `(${i.id}) ${i.qty} x ${i.name} @ LKR ${i.price}`).join(',\n'),
+            items: cart.map(i => ({ id: i.id, qty: i.qty })) // Send items array for backend cost calc
         };
 
         // Send to Google Sheet
@@ -1335,6 +1335,96 @@ async function handleCheckout(e) {
         submitBtn.disabled = false;
         submitBtn.innerText = originalText;
     }
+}
+
+
+
+
+// ...
+async function openAccountModal() {
+    els.accountModal.classList.remove('hidden');
+    els.overlay.classList.remove('hidden');
+
+    if (currentUser) {
+        // Populate display initially from local storage
+        populateProfileUI(currentUser);
+
+        // Fetch latest data from backend silently
+        try {
+            // We use the register/update response structure to get latest data if possible.
+            // Since we lack a dedicated 'get_profile' endpoint that doesn't need password,
+            // we rely on the local storage being updated by 'handleProfileUpdate'
+            // BUT, if we want to force refresh, we can try to call a lightweight endpoint or just rely on LS.
+
+            // Fix: ensure the UI fields (inputs) are also populated
+            document.getElementById('upd-name').value = currentUser.name;
+            document.getElementById('upd-phone').value = currentUser.phone || '';
+            document.getElementById('upd-address').value = currentUser.address || '';
+
+        } catch (e) { }
+
+        // Default to Orders tab
+        window.switchAccountTab('orders');
+        loadCustomerOrders();
+    }
+}
+
+function populateProfileUI(user) {
+    document.getElementById('user-initial').innerText = user.name.charAt(0).toUpperCase();
+    document.getElementById('user-name-display').innerText = user.name;
+    document.getElementById('user-id-display').innerText = user.id;
+    document.getElementById('user-email-display').innerText = user.email;
+    document.getElementById('user-phone-display').innerText = user.phone || '';
+    document.getElementById('user-addr-display').innerText = user.address || '';
+}
+
+// Send to Google Sheet
+if (WEB_APP_URL && WEB_APP_URL.includes('script.google')) {
+    const res = await fetch(WEB_APP_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'place_order', order: orderData })
+    });
+
+    // Try to read response
+    // Try to read response
+    try {
+        const result = await res.json();
+
+        // Version Check
+        if (result.backend_version === 'v2.2') {
+            // console.log("Backend is up to date");
+        } else {
+            alert("Warning: Your Google Cloud Script is outdated! Please Redeploy the script in the Apps Script Editor.");
+        }
+
+        if (result.status !== 'success') {
+            throw new Error(result.message || 'Database error');
+        }
+    } catch (jsonErr) {
+        console.warn('Response parsing error', jsonErr);
+    }
+}
+
+// Show Success Modal
+document.getElementById('success-order-id').innerText = orderId;
+els.successModal.classList.remove('hidden');
+els.overlay.classList.remove('hidden');
+
+// Clear Cart
+cart = [];
+saveCart();
+updateCartUI();
+toggleCart();
+e.target.reset();
+
+    } catch (err) {
+    console.error('Checkout error:', err);
+    alert('Something went wrong. Please try again or contact support.');
+} finally {
+    submitBtn.disabled = false;
+    submitBtn.innerText = originalText;
+}
 }
 
 
