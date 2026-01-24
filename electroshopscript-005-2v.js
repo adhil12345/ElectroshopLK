@@ -1,7 +1,7 @@
 
 // --- Configuration ---
 // PASTE YOUR GOOGLE WEB APP URL HERE AFTER DEPLOYING
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby4DtWpQAXfY-nU4V_Z5_Y4rrW4LxBe-5yKoO3DweHcYlmnpS-ng4XbLqIMmmUOklRZAg/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwAy0WCItUUowMreEZIrxZrb7o1SFpidfadL_6ZOUJYSOYD7yh143maJ818DYbB4BfG6g/exec';
 // Example: https://script.google.com/macros/s/AKfycb.../exec
 
 let DELIVERY_CHARGE = 350; // LKR default (will be updated by settings)
@@ -955,5 +955,3 @@ function closeSuccessModal() { els.successModal.classList.add('hidden'); els.ove
 
 // Start
 init();
-
-
