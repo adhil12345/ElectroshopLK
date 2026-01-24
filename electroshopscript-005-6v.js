@@ -1,7 +1,7 @@
 
 // --- Configuration ---
 // PASTE YOUR GOOGLE WEB APP URL HERE AFTER DEPLOYING
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzN4WibKXfhexkQBvX2K-mvA7Dt7UyDwAMeuPele6gAGCDp0h5t3DPrP2qsJBDOunGocw/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzS3GDgo3nQL5cCMHdW5Hory7rAyJOgbtWnjk3SRTkgpQYu9W2jpcOC5FBH2GROqRYzsw/exec';
 // Example: https://script.google.com/macros/s/AKfycb.../exec
 
 let DELIVERY_CHARGE = 350; // LKR default (will be updated by settings)
@@ -314,7 +314,7 @@ async function loadProducts() {
                     id: p[0], name: p[1], price: p[2], image: normalizeDriveUrl(img),
                     description: p[4], category: p[5], quantity: p[6], origin: p[7],
                     descriptionImage: descImg, longDescription: longDesc,
-                    colors: p[10] || "", costPrice: p[11], brand, rating
+                    colors: p[10] || "", costPrice: p[11], brand, rating, soldCount: p[14] || 0
                 };
             }
 
@@ -346,6 +346,7 @@ async function loadProducts() {
             const colors = findKey(['colors', 'variants', 'colour']) || '';
             const brand = findKey(['brand', 'brandname']) || '';
             const rating = findKey(['rating', 'starrating', 'stars']) || '5.0';
+            const soldCount = findKey(['soldCount', 'sold', 'sales', 'sold_count']) || 0;
 
             let originalPrice = priceRaw;
             let offerPrice = priceRaw;
@@ -378,7 +379,8 @@ async function loadProducts() {
                 longDescription,
                 colors,
                 brand,
-                rating
+                rating,
+                soldCount
             };
         }).map(p => {
             // Final check: if after all that it's still empty, use a placeholder
@@ -485,6 +487,7 @@ function renderProducts(list) {
       <div class="p-details">
         ${p.brand ? `<div class="p-brand" style="font-size:0.7rem; color:#888; text-transform:uppercase; margin-bottom:2px;">${p.brand}</div>` : ''}
         <h3 class="p-title">${p.name}</h3>
+        ${parseInt(p.soldCount) > 0 ? `<div style="font-size: 0.75rem; color: #64748b; margin-bottom: 4px;">${formatSold(p.soldCount)} sold</div>` : ''}
         <div class="p-price-container">
           ${p.hasOffer ? `<span class="price-old">LKR ${p.originalPrice}</span>` : ''}
           <span class="p-price">LKR ${p.price}</span>
@@ -534,6 +537,10 @@ function openModal(product, pushState = true) {
     for (let i = 0; i < fullStars; i++) starsHtml += '⭐';
     if (halfStar && fullStars < 5) starsHtml += '⭐'; // Using full star for simplicity or could use a half-star char if font supports
     starsHtml += `</span> <span style="font-size:0.8rem; color:#666;">Ratings ${product.rating || '5.0'}</span>`;
+
+    if (parseInt(product.soldCount) > 0) {
+        starsHtml += ` <span style="margin: 0 5px; color: #ccc;">|</span> <span style="font-size:0.8rem; color:#666;">${formatSold(product.soldCount)} sold</span>`;
+    }
 
     const existingRating = els.modal.querySelector('.m-rating-row');
     if (existingRating) existingRating.remove();
@@ -770,6 +777,21 @@ window.searchByBrand = function (brand) {
     closeModal();
     els.grid.scrollIntoView({ behavior: 'smooth' });
 };
+
+// Helper for Brand Search
+window.searchByBrand = function (brand) {
+    els.searchInput.value = brand;
+    handleSearch();
+    closeModal();
+    els.grid.scrollIntoView({ behavior: 'smooth' });
+};
+
+function formatSold(count) {
+    const num = parseInt(count);
+    if (!num) return '0';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'k+';
+    return num;
+}
 
 // ... Cart Logic (Standard) ...
 function addToCart(product, qty) {
