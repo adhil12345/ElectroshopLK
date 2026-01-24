@@ -1,7 +1,7 @@
 
 // --- Configuration ---
 // PASTE YOUR GOOGLE WEB APP URL HERE AFTER DEPLOYING
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw5AnynAk_uTfQoClANvAzGHNs1C9C8xw3Mfkhpl5EoSRvYBypwT1n0T6AUiPDyxEKcqQ/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzN4WibKXfhexkQBvX2K-mvA7Dt7UyDwAMeuPele6gAGCDp0h5t3DPrP2qsJBDOunGocw/exec';
 // Example: https://script.google.com/macros/s/AKfycb.../exec
 
 let DELIVERY_CHARGE = 350; // LKR default (will be updated by settings)
@@ -309,13 +309,12 @@ async function loadProducts() {
                 const longDesc = p[9] || "";
                 const brand = p[12] || "";
                 const rating = p[13] || "5.0";
-                const soldCount = p[14] || 0;
 
                 return {
                     id: p[0], name: p[1], price: p[2], image: normalizeDriveUrl(img),
                     description: p[4], category: p[5], quantity: p[6], origin: p[7],
                     descriptionImage: descImg, longDescription: longDesc,
-                    colors: p[10] || "", costPrice: p[11], brand, rating, soldCount
+                    colors: p[10] || "", costPrice: p[11], brand, rating
                 };
             }
 
@@ -347,7 +346,6 @@ async function loadProducts() {
             const colors = findKey(['colors', 'variants', 'colour']) || '';
             const brand = findKey(['brand', 'brandname']) || '';
             const rating = findKey(['rating', 'starrating', 'stars']) || '5.0';
-            const soldCount = findKey(['soldCount', 'soldoutcount', 'sold_count', 'sold']) || 0;
 
             let originalPrice = priceRaw;
             let offerPrice = priceRaw;
@@ -380,8 +378,7 @@ async function loadProducts() {
                 longDescription,
                 colors,
                 brand,
-                rating,
-                soldCount
+                rating
             };
         }).map(p => {
             // Final check: if after all that it's still empty, use a placeholder
@@ -485,11 +482,8 @@ function renderProducts(list) {
       <div style="overflow:hidden;">
         <img class="p-image" src="${p.image}" alt="${p.name}" loading="lazy">
       </div>
-        <div class="p-details">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
-          ${p.brand ? `<div class="p-brand" style="font-size:0.7rem; color:#888; text-transform:uppercase;">${p.brand}</div>` : '<div></div>'}
-          ${p.soldCount > 0 ? `<div style="font-size:0.7rem; color:#6366f1; background:#eef2ff; padding:2px 6px; border-radius:4px; font-weight:600;">${p.soldCount} Sold</div>` : ''}
-        </div>
+      <div class="p-details">
+        ${p.brand ? `<div class="p-brand" style="font-size:0.7rem; color:#888; text-transform:uppercase; margin-bottom:2px;">${p.brand}</div>` : ''}
         <h3 class="p-title">${p.name}</h3>
         <div class="p-price-container">
           ${p.hasOffer ? `<span class="price-old">LKR ${p.originalPrice}</span>` : ''}
@@ -543,17 +537,9 @@ function openModal(product, pushState = true) {
 
     const existingRating = els.modal.querySelector('.m-rating-row');
     if (existingRating) existingRating.remove();
+    const ratingDiv = document.createElement('div');
     ratingDiv.className = 'm-rating-row';
     ratingDiv.style.marginBottom = '0.5rem';
-    ratingDiv.style.display = 'flex';
-    ratingDiv.style.alignItems = 'center';
-    ratingDiv.style.gap = '1rem';
-
-    // Append Sold Count to Rating Row
-    if (product.soldCount > 0) {
-        starsHtml += ` <span style="font-size:0.8rem; color:#6366f1; background:#eef2ff; padding:2px 8px; border-radius:12px; font-weight:600;">${product.soldCount} Sold</span>`;
-    }
-
     ratingDiv.innerHTML = starsHtml;
     els.mTitle.parentNode.insertBefore(ratingDiv, els.mTitle.nextSibling);
 
