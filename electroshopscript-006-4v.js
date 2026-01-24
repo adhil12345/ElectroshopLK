@@ -1,7 +1,7 @@
 
 // --- Configuration ---
 // PASTE YOUR GOOGLE WEB APP URL HERE AFTER DEPLOYING
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwa5joJQxlj2cqLJIP8IfQnPQwMaOnIdvbP9LuE_U0nc42ZFOMNs96tYk0tz7MDEBCdug/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbySZdIzAv8oe_HKNpl6h39SAN4rD1WHCXSl2lGzHxOH4i6ZC-VQsmF-M0ienBsVHQKmcg/exec';
 const GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com"; // User must replace this
 // Example: https://script.google.com/macros/s/AKfycb.../exec
 
@@ -37,6 +37,10 @@ const els = {
     closeAccountModal: document.getElementById('close-account-modal'),
     loginForm: document.getElementById('login-form'),
     registerForm: document.getElementById('register-form'),
+
+    // Account Settings
+    updateProfileForm: document.getElementById('update-profile-form'),
+    changePasswordForm: document.getElementById('change-password-form'),
 
     // Auth Sections
     loginSection: document.getElementById('login-section'),
@@ -138,9 +142,9 @@ function bindEvents() {
     els.loginForm.addEventListener('submit', handleCustomerLogin);
     els.registerForm.addEventListener('submit', handleCustomerRegister);
 
-    // Profile Update Submit (if element exists)
-    const profileForm = document.getElementById('profile-settings-form');
-    if (profileForm) profileForm.addEventListener('submit', handleProfileUpdate);
+    // Settings Submit
+    if (els.updateProfileForm) els.updateProfileForm.addEventListener('submit', handleProfileUpdate);
+    if (els.changePasswordForm) els.changePasswordForm.addEventListener('submit', handleChangePassword);
 
     // Expose toggleAuthMode globally
     window.toggleAuthMode = (mode) => {
@@ -151,6 +155,16 @@ function bindEvents() {
             els.registerSection.classList.add('hidden');
             els.loginSection.classList.remove('hidden');
         }
+    };
+
+    window.switchAccountTab = (tab) => {
+        document.querySelectorAll('.account-nav .btn-outline').forEach(b => b.classList.remove('active'));
+        document.getElementById(`btn-tab-${tab}`).classList.add('active');
+
+        document.getElementById('tab-orders').classList.add('hidden');
+        document.getElementById('tab-settings').classList.add('hidden');
+
+        document.getElementById(`tab-${tab}`).classList.remove('hidden');
     };
 
     window.logoutCustomer = () => {
@@ -330,20 +344,15 @@ function openAccountModal() {
         document.getElementById('user-phone-display').innerText = currentUser.phone || '';
         document.getElementById('user-addr-display').innerText = currentUser.address || '';
 
-        // Pre-fill settings form
-        document.getElementById('update-address').value = currentUser.address || '';
+        // Populate settings inputs
+        document.getElementById('upd-name').value = currentUser.name;
+        document.getElementById('upd-phone').value = currentUser.phone || '';
+        document.getElementById('upd-address').value = currentUser.address || '';
 
-        switchAccountTab('orders'); // Default tab
+        // Default to Orders tab
+        window.switchAccountTab('orders');
         loadCustomerOrders();
     }
-}
-
-function switchAccountTab(tab) {
-    document.querySelectorAll('.acc-tab-content').forEach(el => el.classList.add('hidden'));
-    document.querySelectorAll('.acc-nav-item').forEach(el => el.classList.remove('active'));
-
-    document.getElementById(`acc-tab-${tab}`).classList.remove('hidden');
-    document.getElementById(`acc-nav-${tab}`).classList.add('active');
 }
 
 async function handleProfileUpdate(e) {
@@ -353,16 +362,11 @@ async function handleProfileUpdate(e) {
     btn.innerText = "Updating...";
     btn.disabled = true;
 
-    const newAddress = document.getElementById('update-address').value;
-    const newPassword = document.getElementById('update-password').value;
-
-    // Validation: at least one field required
-    if (!newAddress && !newPassword) {
-        alert("Please enter a new address or password to update.");
-        btn.innerText = originalText;
-        btn.disabled = false;
-        return;
-    }
+    const updates = {
+        name: document.getElementById('upd-name').value,
+        phone: document.getElementById('upd-phone').value,
+        address: document.getElementById('upd-address').value
+    };
 
     try {
         const res = await fetch(WEB_APP_URL, {
@@ -370,29 +374,59 @@ async function handleProfileUpdate(e) {
             body: JSON.stringify({
                 action: 'update_customer_profile',
                 customerId: currentUser.id,
-                password: newPassword,
-                address: newAddress
+                ...updates
             })
         });
         const data = await res.json();
 
         if (data.status === 'success') {
-            // Update local session
             currentUser = data.customer;
             localStorage.setItem('electro_customer', JSON.stringify(currentUser));
-
-            // Update UI
-            document.getElementById('user-addr-display').innerText = currentUser.address || '';
-            document.getElementById('update-password').value = ''; // Clear password field for security
-
-            alert("Profile Updated Successfully!");
-            checkUserSession(); // Update checkout forms if needed
+            alert("Profile updated successfully!");
+            openAccountModal(); // Refresh UI
         } else {
             alert("Update Failed: " + data.message);
         }
     } catch (err) {
         console.error(err);
-        alert("Connection Error.");
+        alert("Connection Error");
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
+}
+
+async function handleChangePassword(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button');
+    const originalText = btn.innerText;
+    btn.innerText = "Updating...";
+    btn.disabled = true;
+
+    const oldPass = document.getElementById('upd-old-pass').value;
+    const newPass = document.getElementById('upd-new-pass').value;
+
+    try {
+        const res = await fetch(WEB_APP_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'change_customer_password',
+                customerId: currentUser.id,
+                oldPassword: oldPass,
+                newPassword: newPass
+            })
+        });
+        const data = await res.json();
+
+        if (data.status === 'success') {
+            alert("Password changed successfully!");
+            e.target.reset();
+        } else {
+            alert("Error: " + data.message);
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Connection Error");
     } finally {
         btn.innerText = originalText;
         btn.disabled = false;
