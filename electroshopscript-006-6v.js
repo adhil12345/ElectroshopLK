@@ -1,6 +1,7 @@
 
+// --- Configuration ---
 // PASTE YOUR GOOGLE WEB APP URL HERE AFTER DEPLOYING
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbySZdIzAv8oe_HKNpl6h39SAN4rD1WHCXSl2lGzHxOH4i6ZC-VQsmF-M0ienBsVHQKmcg/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyPR8YKSIuRcWEwqolbGEISkXq0K87VI872KB6p6Ub80jt9wWSjRLW1xP0LA4t2Q8UWnQ/exec';
 const GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com"; // User must replace this
 // Example: https://script.google.com/macros/s/AKfycb.../exec
 
