@@ -1,7 +1,7 @@
 
 // --- Configuration ---
 // PASTE YOUR GOOGLE WEB APP URL HERE AFTER DEPLOYING
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzVQG22Mnr4gMZDL3a5VtY7Wb2h37UoLXBRNA0vdo3MiCjT-O3T5NezC8y4kCd22iVN/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyOz1sdNyKC8ydRS8KnA6cMj5tNJ2lmjkp2XeYjjF-ky6XbYRRXHW7noke8Rq2HsUCDgA/exec';
 // Example: https://script.google.com/macros/s/AKfycb.../exec
 
 let DELIVERY_CHARGE = 350; // LKR default (will be updated by settings)
