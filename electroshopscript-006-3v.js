@@ -1,7 +1,7 @@
 
 // --- Configuration ---
 // PASTE YOUR GOOGLE WEB APP URL HERE AFTER DEPLOYING
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz_nTtV3T7j4-wRGSe3SGaJxm1ANxEGjaIOXdXY5uXw1mgGkrxW13kcwR-djM7yvWqhmw/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwa5joJQxlj2cqLJIP8IfQnPQwMaOnIdvbP9LuE_U0nc42ZFOMNs96tYk0tz7MDEBCdug/exec';
 const GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com"; // User must replace this
 // Example: https://script.google.com/macros/s/AKfycb.../exec
 
@@ -138,6 +138,10 @@ function bindEvents() {
     els.loginForm.addEventListener('submit', handleCustomerLogin);
     els.registerForm.addEventListener('submit', handleCustomerRegister);
 
+    // Profile Update Submit (if element exists)
+    const profileForm = document.getElementById('profile-settings-form');
+    if (profileForm) profileForm.addEventListener('submit', handleProfileUpdate);
+
     // Expose toggleAuthMode globally
     window.toggleAuthMode = (mode) => {
         if (mode === 'register') {
@@ -148,22 +152,6 @@ function bindEvents() {
             els.loginSection.classList.remove('hidden');
         }
     };
-
-    // Expose Switch View Logic
-    window.switchAccountView = (view) => {
-        const orderView = document.getElementById('account-view-orders');
-        const setView = document.getElementById('account-view-settings');
-
-        if (view === 'settings') {
-            orderView.classList.add('hidden');
-            setView.classList.remove('hidden');
-        } else {
-            setView.classList.add('hidden');
-            orderView.classList.remove('hidden');
-        }
-    };
-
-    document.getElementById('profile-update-form').addEventListener('submit', handleProfileUpdate);
 
     window.logoutCustomer = () => {
         localStorage.removeItem('electro_customer');
@@ -342,60 +330,75 @@ function openAccountModal() {
         document.getElementById('user-phone-display').innerText = currentUser.phone || '';
         document.getElementById('user-addr-display').innerText = currentUser.address || '';
 
-        // Populate Edit Form
-        document.getElementById('edit-phone').value = currentUser.phone || '';
-        document.getElementById('edit-address').value = currentUser.address || '';
+        // Pre-fill settings form
+        document.getElementById('update-address').value = currentUser.address || '';
 
+        switchAccountTab('orders'); // Default tab
         loadCustomerOrders();
     }
+}
+
+function switchAccountTab(tab) {
+    document.querySelectorAll('.acc-tab-content').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.acc-nav-item').forEach(el => el.classList.remove('active'));
+
+    document.getElementById(`acc-tab-${tab}`).classList.remove('hidden');
+    document.getElementById(`acc-nav-${tab}`).classList.add('active');
 }
 
 async function handleProfileUpdate(e) {
     e.preventDefault();
     const btn = e.target.querySelector('button');
     const originalText = btn.innerText;
-    btn.innerText = "Saving...";
+    btn.innerText = "Updating...";
     btn.disabled = true;
 
-    const phone = document.getElementById('edit-phone').value;
-    const address = document.getElementById('edit-address').value;
-    const newPassword = document.getElementById('edit-password').value;
+    const newAddress = document.getElementById('update-address').value;
+    const newPassword = document.getElementById('update-password').value;
+
+    // Validation: at least one field required
+    if (!newAddress && !newPassword) {
+        alert("Please enter a new address or password to update.");
+        btn.innerText = originalText;
+        btn.disabled = false;
+        return;
+    }
 
     try {
         const res = await fetch(WEB_APP_URL, {
             method: 'POST',
             body: JSON.stringify({
                 action: 'update_customer_profile',
-                id: currentUser.id,
-                phone: phone,
-                address: address,
-                newPassword: newPassword
+                customerId: currentUser.id,
+                password: newPassword,
+                address: newAddress
             })
         });
         const data = await res.json();
 
         if (data.status === 'success') {
-            alert("Profile Updated Successfully!");
-            // Update local user object
-            currentUser.phone = phone;
-            currentUser.address = address;
+            // Update local session
+            currentUser = data.customer;
             localStorage.setItem('electro_customer', JSON.stringify(currentUser));
 
-            // Refresh UI
-            openAccountModal();
-            document.getElementById('edit-password').value = ""; // Clear password field
-            window.switchAccountView('orders'); // Go back to main view
+            // Update UI
+            document.getElementById('user-addr-display').innerText = currentUser.address || '';
+            document.getElementById('update-password').value = ''; // Clear password field for security
+
+            alert("Profile Updated Successfully!");
+            checkUserSession(); // Update checkout forms if needed
         } else {
             alert("Update Failed: " + data.message);
         }
     } catch (err) {
         console.error(err);
-        alert("Connection Error");
+        alert("Connection Error.");
     } finally {
         btn.innerText = originalText;
         btn.disabled = false;
     }
 }
+
 function checkUserSession() {
     if (currentUser) {
         // Pre-fill checkout if form exists
