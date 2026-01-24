@@ -1,7 +1,7 @@
 
 // --- Configuration ---
 // PASTE YOUR GOOGLE WEB APP URL HERE AFTER DEPLOYING
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzS3GDgo3nQL5cCMHdW5Hory7rAyJOgbtWnjk3SRTkgpQYu9W2jpcOC5FBH2GROqRYzsw/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzVQG22Mnr4gMZDL3a5VtY7Wb2h37UoLXBRNA0vdo3MiCjT-O3T5NezC8y4kCd22iVN/exec';
 // Example: https://script.google.com/macros/s/AKfycb.../exec
 
 let DELIVERY_CHARGE = 350; // LKR default (will be updated by settings)
@@ -903,7 +903,7 @@ async function handleCheckout(e) {
                 const result = await res.json();
 
                 // Version Check
-                if (result.backend_version === 'v2.0-FIXED') {
+                if (result.backend_version === 'v2.1') {
                     // console.log("Backend is up to date");
                 } else {
                     alert("Warning: Your Google Cloud Script is outdated! Please Redeploy the script in the Apps Script Editor.");
