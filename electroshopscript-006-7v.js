@@ -1379,53 +1379,9 @@ function populateProfileUI(user) {
     document.getElementById('user-addr-display').innerText = user.address || '';
 }
 
-// Send to Google Sheet
-if (WEB_APP_URL && WEB_APP_URL.includes('script.google')) {
-    const res = await fetch(WEB_APP_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'place_order', order: orderData })
-    });
+// --- Info Pages ---
 
-    // Try to read response
-    // Try to read response
-    try {
-        const result = await res.json();
 
-        // Version Check
-        if (result.backend_version === 'v2.2') {
-            // console.log("Backend is up to date");
-        } else {
-            alert("Warning: Your Google Cloud Script is outdated! Please Redeploy the script in the Apps Script Editor.");
-        }
-
-        if (result.status !== 'success') {
-            throw new Error(result.message || 'Database error');
-        }
-    } catch (jsonErr) {
-        console.warn('Response parsing error', jsonErr);
-    }
-}
-
-// Show Success Modal
-document.getElementById('success-order-id').innerText = orderId;
-els.successModal.classList.remove('hidden');
-els.overlay.classList.remove('hidden');
-
-// Clear Cart
-cart = [];
-saveCart();
-updateCartUI();
-toggleCart();
-e.target.reset();
-
-    } catch (err) {
-    console.error('Checkout error:', err);
-    alert('Something went wrong. Please try again or contact support.');
-} finally {
-    submitBtn.disabled = false;
-    submitBtn.innerText = originalText;
-}
 }
 
 
