@@ -1,7 +1,7 @@
 
 // --- Configuration ---
 // PASTE YOUR GOOGLE WEB APP URL HERE AFTER DEPLOYING
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxCXnXEBGpzVSk8QXqpGc4TjmVD7-oiX82b-wqoc7qChyQQPF_7sCmhQwn4t5THzof-6w/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw0EM3bLqe6EfyXAZT18RUyA-_dWQh-DooXCWUOvH1tY9T_pU73b0ItNYkv2Xz3qT7Kxw/exec';
 const GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com"; // User must replace this
 // Example: https://script.google.com/macros/s/AKfycb.../exec
 
@@ -1276,6 +1276,7 @@ async function handleCheckout(e) {
             order_date: new Date().toLocaleString(),
             customer_name: fd.get('cust-name'),
             customer_email: fd.get('cust-email'),
+            customer_id: currentUser ? currentUser.id : "",
             contact_number: fd.get('cust-phone'),
             whatsapp_number: fd.get('cust-phone'),
             full_address: fd.get('cust-address'),
