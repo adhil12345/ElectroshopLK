@@ -1,7 +1,7 @@
 
 // --- Configuration ---
 // PASTE YOUR GOOGLE WEB APP URL HERE AFTER DEPLOYING
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyw6cjOOfx4SOTOmJsGpW3P5amor-7UnYS8fx0hKXETVCPwQkIi3r3xgMkdgikMz33WYw/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzQOZiO2TxT1hf-OYqmkvGYwd-UbCG3tIX7-86qMj6vdhzzFzMmtZO-Lo4ptHFitj7cWQ/exec';
 const GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com"; // User must replace this
 // Example: https://script.google.com/macros/s/AKfycb.../exec
 
@@ -435,28 +435,16 @@ async function handleChangePassword(e) {
 
 function checkUserSession() {
     if (currentUser) {
-        // Set placeholders with saved info for checkout form
+        // Pre-fill checkout if form exists
         const nameIn = els.checkoutForm.querySelector('[name="cust-name"]');
         const emailIn = els.checkoutForm.querySelector('[name="cust-email"]');
         const phoneIn = els.checkoutForm.querySelector('[name="cust-phone"]');
         const addrIn = els.checkoutForm.querySelector('[name="cust-address"]');
 
-        if (nameIn) {
-            nameIn.placeholder = currentUser.name;
-            nameIn.value = currentUser.name; // Also pre-fill for convenience
-        }
-        if (emailIn) {
-            emailIn.placeholder = currentUser.email;
-            emailIn.value = currentUser.email;
-        }
-        if (phoneIn && currentUser.phone) {
-            phoneIn.placeholder = currentUser.phone;
-            phoneIn.value = currentUser.phone;
-        }
-        if (addrIn && currentUser.address) {
-            addrIn.placeholder = currentUser.address;
-            addrIn.value = currentUser.address;
-        }
+        if (nameIn) nameIn.value = currentUser.name;
+        if (emailIn) emailIn.value = currentUser.email;
+        if (phoneIn) phoneIn.value = currentUser.phone || '';
+        if (addrIn) addrIn.value = currentUser.address || '';
     }
 }
 
@@ -535,80 +523,42 @@ async function handleCustomerRegister(e) {
 
 async function loadCustomerOrders() {
     const listDiv = document.getElementById('customer-orders-list');
-
-    if (!listDiv) {
-        console.error('customer-orders-list element not found');
-        return;
-    }
-
-    if (!currentUser || !currentUser.email) {
-        console.error('No current user or email found');
-        listDiv.innerHTML = '<div style="text-align:center; padding:2rem; color:#888;">Please log in to view orders.</div>';
-        return;
-    }
-
     listDiv.innerHTML = '<div style="text-align:center; padding:1rem; color:#888;">Fetching orders...</div>';
-
-    console.log('Fetching orders for:', currentUser.email);
-    console.log('Using WEB_APP_URL:', WEB_APP_URL);
 
     try {
         const res = await fetch(WEB_APP_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({ action: 'get_customer_orders', customerId: currentUser.email })
         });
-
-        if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
-        }
+        // Note: passing email as ID fallback as discussed in backend logic
 
         const data = await res.json();
-        console.log('Order history response:', data); // Debug log
 
-        if (data.status === 'success') {
-            if (data.data && data.data.length > 0) {
-                console.log(`Found ${data.data.length} orders`);
-                listDiv.innerHTML = data.data.map(o => {
-                    // Handle both possible field name formats
-                    const orderId = o.orderId || o.Order_ID || 'N/A';
-                    const date = o.date || o.Order_Date || '';
-                    const total = o.total || o.Total_Price || '0';
-                    const status = o.status || o.Order_Status || 'Pending';
-                    const items = o.items || o.Admin_Notes || o.products || '';
-                    const tracking = o.tracking || o.Tracking_Number || 'Pending';
-                    const courier = o.courier || o.Courier_Service || 'Pending';
-
-                    return `
-                  <div style="background:#f9f9f9; padding:1rem; border-radius:8px; border:1px solid #eee;">
-                     <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
-                        <span style="font-weight:700;">#${orderId}</span>
-                        <span class="badge" style="font-size:0.75rem; background:${status === 'Delivered' ? '#10b981' : '#f59e0b'}; color:white; padding:2px 6px; border-radius:4px;">${status}</span>
-                     </div>
-                     <div style="font-size:0.85rem; color:#666; margin-bottom:0.5rem;">
-                        ${date ? new Date(date).toLocaleDateString() : 'Date unavailable'}
-                     </div>
-                     <div style="font-size:0.9rem; margin-bottom:0.5rem;">
-                        ${items ? (items.length > 60 ? items.substring(0, 60) + '...' : items) : 'Items info unavailable'}
-                     </div>
-                     <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #eee; padding-top:0.5rem; margin-top:0.5rem;">
-                        <span style="font-weight:700;">LKR ${total}</span>
-                        <button style="font-size:0.8rem; color:var(--primary); background:none; border:none; cursor:pointer;" onclick="alert('Tracking: ${tracking}\\nCourier: ${courier}')">Track Order</button>
-                     </div>
-                  </div>
-                `;
-                }).join('');
-            } else {
-                console.log('No orders found in response');
-                listDiv.innerHTML = '<div style="text-align:center; padding:2rem; color:#888;">No orders found yet. Place your first order!</div>';
-            }
+        if (data.status === 'success' && data.data.length > 0) {
+            listDiv.innerHTML = data.data.map(o => `
+              <div style="background:#f9f9f9; padding:1rem; border-radius:8px; border:1px solid #eee;">
+                 <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+                    <span style="font-weight:700;">#${o.orderId || o.Order_ID}</span>
+                    <span class="badge" style="font-size:0.75rem; background:${o.status === 'Delivered' ? '#10b981' : '#f59e0b'}; color:white; padding:2px 6px; border-radius:4px;">${o.status}</span>
+                 </div>
+                 <div style="font-size:0.85rem; color:#666; margin-bottom:0.5rem;">
+                    ${new Date(o.date).toLocaleDateString()}
+                 </div>
+                 <div style="font-size:0.9rem; margin-bottom:0.5rem;">
+                    ${o.items ? o.items.substring(0, 60) + '...' : 'Items info unavailable'}
+                 </div>
+                 <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #eee; pt-2; mt-2;">
+                    <span style="font-weight:700;">LKR ${o.total}</span>
+                    <button style="font-size:0.8rem; color:var(--primary); background:none; border:none; cursor:pointer;" onclick="alert('Tracking: ${o.tracking || 'Pending'}\\nCourier: ${o.courier || 'Pending'}')">Track Order</button>
+                 </div>
+              </div>
+            `).join('');
         } else {
-            console.error('Backend returned error:', data.message || 'Unknown error');
-            listDiv.innerHTML = `<div style="text-align:center; padding:2rem; color:#ff4747;">Error: ${data.message || 'Failed to load orders'}</div>`;
+            listDiv.innerHTML = '<div style="text-align:center; padding:2rem; color:#888;">No orders found.</div>';
         }
     } catch (err) {
-        console.error('Failed to load order history:', err);
-        listDiv.innerHTML = '<div style="text-align:center; color:red;">Failed to load history. Please check your connection and try again.</div>';
+        console.warn(err);
+        listDiv.innerHTML = '<div style="text-align:center; color:red;">Failed to load history.</div>';
     }
 }
 
@@ -1325,7 +1275,7 @@ async function handleCheckout(e) {
             order_id: orderId,
             order_date: new Date().toLocaleString(),
             customer_name: fd.get('cust-name'),
-            customer_email: fd.get('cust-email'),
+            customer_email: fd.get('cust-email'), // ✅ Keep this
             contact_number: fd.get('cust-phone'),
             whatsapp_number: fd.get('cust-phone'),
             full_address: fd.get('cust-address'),
@@ -1335,8 +1285,7 @@ async function handleCheckout(e) {
             subtotal: els.cartSubtotal.innerText.replace('LKR ', '').trim(),
             delivery_charge: DELIVERY_CHARGE,
             total_price: totalText,
-            items_summary: cart.map(i => `(${i.id}) ${i.qty} x ${i.name} @ LKR ${i.price}`).join(',\n'),
-            items: cart.map(i => ({ id: i.id, qty: i.qty })) // Send items array for backend cost calc
+            items_summary: cart.map(i => `(${i.id}) ${i.qty} x ${i.name} @ LKR ${i.price}`).join(',\n')
         };
 
         // Send to Google Sheet
@@ -1387,52 +1336,6 @@ async function handleCheckout(e) {
         submitBtn.innerText = originalText;
     }
 }
-
-
-
-
-// ...
-async function openAccountModal() {
-    els.accountModal.classList.remove('hidden');
-    els.overlay.classList.remove('hidden');
-
-    if (currentUser) {
-        // Populate display initially from local storage
-        populateProfileUI(currentUser);
-
-        // Fetch latest data from backend silently
-        try {
-            // We use the register/update response structure to get latest data if possible.
-            // Since we lack a dedicated 'get_profile' endpoint that doesn't need password,
-            // we rely on the local storage being updated by 'handleProfileUpdate'
-            // BUT, if we want to force refresh, we can try to call a lightweight endpoint or just rely on LS.
-
-            // Fix: ensure the UI fields (inputs) are also populated
-            document.getElementById('upd-name').value = currentUser.name;
-            document.getElementById('upd-phone').value = currentUser.phone || '';
-            document.getElementById('upd-address').value = currentUser.address || '';
-
-        } catch (e) { }
-
-        // Default to Orders tab
-        window.switchAccountTab('orders');
-        loadCustomerOrders();
-    }
-}
-
-function populateProfileUI(user) {
-    document.getElementById('user-initial').innerText = user.name.charAt(0).toUpperCase();
-    document.getElementById('user-name-display').innerText = user.name;
-    document.getElementById('user-id-display').innerText = user.id;
-    document.getElementById('user-email-display').innerText = user.email;
-    document.getElementById('user-phone-display').innerText = user.phone || '';
-    document.getElementById('user-addr-display').innerText = user.address || '';
-}
-
-// --- Info Pages ---
-
-
-
 
 
 
