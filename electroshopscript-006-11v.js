@@ -1,8 +1,8 @@
 
 // --- Configuration ---
 // PASTE YOUR GOOGLE WEB APP URL HERE AFTER DEPLOYING
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw0EM3bLqe6EfyXAZT18RUyA-_dWQh-DooXCWUOvH1tY9T_pU73b0ItNYkv2Xz3qT7Kxw/exec';
-const GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com"; // User must replace this
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzS3GDgo3nQL5cCMHdW5Hory7rAyJOgbtWnjk3SRTkgpQYu9W2jpcOC5FBH2GROqRYzsw/exec';
+const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID_HERE.apps.googleusercontent.com"; // User must replace this
 // Example: https://script.google.com/macros/s/AKfycb.../exec
 
 let DELIVERY_CHARGE = 350; // LKR default (will be updated by settings)
@@ -1348,24 +1348,30 @@ async function openAccountModal() {
     els.overlay.classList.remove('hidden');
 
     if (currentUser) {
-        // 1. Populate Display Values (Sidebar)
+        // 1. Initial Render from Local Storage (Fast)
         populateProfileUI(currentUser);
+        populateSettingsForm(currentUser);
 
-        // 2. Populate Settings Form Inputs (Edit Profile)
-        const nameInput = document.getElementById('upd-name');
-        const phoneInput = document.getElementById('upd-phone');
-        const addrInput = document.getElementById('upd-address');
+        // 2. Fetch Latest Data from Backend (Background Update)
+        // We use the login action to get fresh data without needing a password if we modify backend, 
+        // BUT standard login needs password. 
+        // INSTAD: We will trust the local data OR implement a 'get_customer_profile' action.
+        // For now, let's assume local storage is key, BUT if it is missing, we might have issues.
 
-        if (nameInput) nameInput.value = currentUser.name || '';
-        if (phoneInput) phoneInput.value = currentUser.phone || '';
-        if (addrInput) addrInput.value = currentUser.address || '';
-
-        // 3. Switch to Orders Tab & Load
+        // Let's rely on the Orders load.
         window.switchAccountTab('orders');
-
-        // Call load orders asynchronously (don't await if we don't want to block UI)
         loadCustomerOrders();
     }
+}
+
+function populateSettingsForm(user) {
+    const nameInput = document.getElementById('upd-name');
+    const phoneInput = document.getElementById('upd-phone');
+    const addrInput = document.getElementById('upd-address');
+
+    if (nameInput) nameInput.value = user.name || '';
+    if (phoneInput) phoneInput.value = user.phone || '';
+    if (addrInput) addrInput.value = user.address || '';
 }
 
 function populateProfileUI(user) {
