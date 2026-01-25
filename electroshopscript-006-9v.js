@@ -1,7 +1,7 @@
 
 // --- Configuration ---
 // PASTE YOUR GOOGLE WEB APP URL HERE AFTER DEPLOYING
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyPR8YKSIuRcWEwqolbGEISkXq0K87VI872KB6p6Ub80jt9wWSjRLW1xP0LA4t2Q8UWnQ/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxCXnXEBGpzVSk8QXqpGc4TjmVD7-oiX82b-wqoc7qChyQQPF_7sCmhQwn4t5THzof-6w/exec';
 const GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com"; // User must replace this
 // Example: https://script.google.com/macros/s/AKfycb.../exec
 
@@ -1347,25 +1347,22 @@ async function openAccountModal() {
     els.overlay.classList.remove('hidden');
 
     if (currentUser) {
-        // Populate display initially from local storage
+        // 1. Populate Display Values (Sidebar)
         populateProfileUI(currentUser);
 
-        // Fetch latest data from backend silently
-        try {
-            // We use the register/update response structure to get latest data if possible.
-            // Since we lack a dedicated 'get_profile' endpoint that doesn't need password,
-            // we rely on the local storage being updated by 'handleProfileUpdate'
-            // BUT, if we want to force refresh, we can try to call a lightweight endpoint or just rely on LS.
+        // 2. Populate Settings Form Inputs (Edit Profile)
+        const nameInput = document.getElementById('upd-name');
+        const phoneInput = document.getElementById('upd-phone');
+        const addrInput = document.getElementById('upd-address');
 
-            // Fix: ensure the UI fields (inputs) are also populated
-            document.getElementById('upd-name').value = currentUser.name;
-            document.getElementById('upd-phone').value = currentUser.phone || '';
-            document.getElementById('upd-address').value = currentUser.address || '';
+        if (nameInput) nameInput.value = currentUser.name || '';
+        if (phoneInput) phoneInput.value = currentUser.phone || '';
+        if (addrInput) addrInput.value = currentUser.address || '';
 
-        } catch (e) { }
-
-        // Default to Orders tab
+        // 3. Switch to Orders Tab & Load
         window.switchAccountTab('orders');
+
+        // Call load orders asynchronously (don't await if we don't want to block UI)
         loadCustomerOrders();
     }
 }
