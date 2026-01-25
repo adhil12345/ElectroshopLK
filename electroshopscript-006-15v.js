@@ -1,7 +1,7 @@
 
 // --- Configuration ---
 // PASTE YOUR GOOGLE WEB APP URL HERE AFTER DEPLOYING
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwt4mFwSEpuaJx_vN_CzgLq5LCktgue_sQ_FE2JGnY4RYS7l1c-gaTVimRi68JBm9T2_g/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyw6cjOOfx4SOTOmJsGpW3P5amor-7UnYS8fx0hKXETVCPwQkIi3r3xgMkdgikMz33WYw/exec';
 const GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com"; // User must replace this
 // Example: https://script.google.com/macros/s/AKfycb.../exec
 
@@ -541,22 +541,22 @@ async function loadCustomerOrders() {
         return;
     }
 
-    if (!currentUser || !currentUser.id) {
-        console.error('No current user or customer ID found');
+    if (!currentUser || !currentUser.email) {
+        console.error('No current user or email found');
         listDiv.innerHTML = '<div style="text-align:center; padding:2rem; color:#888;">Please log in to view orders.</div>';
         return;
     }
 
     listDiv.innerHTML = '<div style="text-align:center; padding:1rem; color:#888;">Fetching orders...</div>';
 
-    console.log('Fetching orders for Customer ID:', currentUser.id);
+    console.log('Fetching orders for:', currentUser.email);
     console.log('Using WEB_APP_URL:', WEB_APP_URL);
 
     try {
         const res = await fetch(WEB_APP_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ action: 'get_customer_orders', customerId: currentUser.id })
+            body: JSON.stringify({ action: 'get_customer_orders', customerId: currentUser.email })
         });
 
         if (!res.ok) {
@@ -1321,16 +1321,10 @@ async function handleCheckout(e) {
         const orderId = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
         const totalText = els.cartTotal.innerText.replace('LKR ', '').trim();
 
-        // If user is logged in, append Customer ID to name for easy tracking
-        let customerName = fd.get('cust-name');
-        if (currentUser && currentUser.id) {
-            customerName = `${customerName} (${currentUser.id})`;
-        }
-
         const orderData = {
             order_id: orderId,
             order_date: new Date().toLocaleString(),
-            customer_name: customerName,
+            customer_name: fd.get('cust-name'),
             customer_email: fd.get('cust-email'),
             contact_number: fd.get('cust-phone'),
             whatsapp_number: fd.get('cust-phone'),
