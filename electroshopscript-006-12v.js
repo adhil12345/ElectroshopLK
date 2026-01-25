@@ -1,8 +1,8 @@
 
 // --- Configuration ---
 // PASTE YOUR GOOGLE WEB APP URL HERE AFTER DEPLOYING
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzS3GDgo3nQL5cCMHdW5Hory7rAyJOgbtWnjk3SRTkgpQYu9W2jpcOC5FBH2GROqRYzsw/exec';
-const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID_HERE.apps.googleusercontent.com"; // User must replace this
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyE5BFcZcDXovgpaEHcblIi_oQDAmOZUWq042ckey6unkqkHw-D5ktW7GZaEFNGqdniRA/exec';
+const GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com"; // User must replace this
 // Example: https://script.google.com/macros/s/AKfycb.../exec
 
 let DELIVERY_CHARGE = 350; // LKR default (will be updated by settings)
@@ -1276,7 +1276,6 @@ async function handleCheckout(e) {
             order_date: new Date().toLocaleString(),
             customer_name: fd.get('cust-name'),
             customer_email: fd.get('cust-email'),
-            customer_id: currentUser ? currentUser.id : "",
             contact_number: fd.get('cust-phone'),
             whatsapp_number: fd.get('cust-phone'),
             full_address: fd.get('cust-address'),
@@ -1348,30 +1347,27 @@ async function openAccountModal() {
     els.overlay.classList.remove('hidden');
 
     if (currentUser) {
-        // 1. Initial Render from Local Storage (Fast)
+        // Populate display initially from local storage
         populateProfileUI(currentUser);
-        populateSettingsForm(currentUser);
 
-        // 2. Fetch Latest Data from Backend (Background Update)
-        // We use the login action to get fresh data without needing a password if we modify backend, 
-        // BUT standard login needs password. 
-        // INSTAD: We will trust the local data OR implement a 'get_customer_profile' action.
-        // For now, let's assume local storage is key, BUT if it is missing, we might have issues.
+        // Fetch latest data from backend silently
+        try {
+            // We use the register/update response structure to get latest data if possible.
+            // Since we lack a dedicated 'get_profile' endpoint that doesn't need password,
+            // we rely on the local storage being updated by 'handleProfileUpdate'
+            // BUT, if we want to force refresh, we can try to call a lightweight endpoint or just rely on LS.
 
-        // Let's rely on the Orders load.
+            // Fix: ensure the UI fields (inputs) are also populated
+            document.getElementById('upd-name').value = currentUser.name;
+            document.getElementById('upd-phone').value = currentUser.phone || '';
+            document.getElementById('upd-address').value = currentUser.address || '';
+
+        } catch (e) { }
+
+        // Default to Orders tab
         window.switchAccountTab('orders');
         loadCustomerOrders();
     }
-}
-
-function populateSettingsForm(user) {
-    const nameInput = document.getElementById('upd-name');
-    const phoneInput = document.getElementById('upd-phone');
-    const addrInput = document.getElementById('upd-address');
-
-    if (nameInput) nameInput.value = user.name || '';
-    if (phoneInput) phoneInput.value = user.phone || '';
-    if (addrInput) addrInput.value = user.address || '';
 }
 
 function populateProfileUI(user) {
