@@ -1,7 +1,7 @@
 
 // --- Configuration ---
 // PASTE YOUR GOOGLE WEB APP URL HERE AFTER DEPLOYING
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyE5BFcZcDXovgpaEHcblIi_oQDAmOZUWq042ckey6unkqkHw-D5ktW7GZaEFNGqdniRA/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwt4mFwSEpuaJx_vN_CzgLq5LCktgue_sQ_FE2JGnY4RYS7l1c-gaTVimRi68JBm9T2_g/exec';
 const GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com"; // User must replace this
 // Example: https://script.google.com/macros/s/AKfycb.../exec
 
@@ -535,54 +535,80 @@ async function handleCustomerRegister(e) {
 
 async function loadCustomerOrders() {
     const listDiv = document.getElementById('customer-orders-list');
+
+    if (!listDiv) {
+        console.error('customer-orders-list element not found');
+        return;
+    }
+
+    if (!currentUser || !currentUser.id) {
+        console.error('No current user or customer ID found');
+        listDiv.innerHTML = '<div style="text-align:center; padding:2rem; color:#888;">Please log in to view orders.</div>';
+        return;
+    }
+
     listDiv.innerHTML = '<div style="text-align:center; padding:1rem; color:#888;">Fetching orders...</div>';
+
+    console.log('Fetching orders for Customer ID:', currentUser.id);
+    console.log('Using WEB_APP_URL:', WEB_APP_URL);
 
     try {
         const res = await fetch(WEB_APP_URL, {
             method: 'POST',
-            body: JSON.stringify({ action: 'get_customer_orders', customerId: currentUser.email })
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: 'get_customer_orders', customerId: currentUser.id })
         });
+
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
 
         const data = await res.json();
         console.log('Order history response:', data); // Debug log
 
-        if (data.status === 'success' && data.data && data.data.length > 0) {
-            listDiv.innerHTML = data.data.map(o => {
-                // Handle both possible field name formats
-                const orderId = o.orderId || o.Order_ID || 'N/A';
-                const date = o.date || o.Order_Date || '';
-                const total = o.total || o.Total_Price || '0';
-                const status = o.status || o.Order_Status || 'Pending';
-                const items = o.items || o.Admin_Notes || o.products || '';
-                const tracking = o.tracking || o.Tracking_Number || 'Pending';
-                const courier = o.courier || o.Courier_Service || 'Pending';
+        if (data.status === 'success') {
+            if (data.data && data.data.length > 0) {
+                console.log(`Found ${data.data.length} orders`);
+                listDiv.innerHTML = data.data.map(o => {
+                    // Handle both possible field name formats
+                    const orderId = o.orderId || o.Order_ID || 'N/A';
+                    const date = o.date || o.Order_Date || '';
+                    const total = o.total || o.Total_Price || '0';
+                    const status = o.status || o.Order_Status || 'Pending';
+                    const items = o.items || o.Admin_Notes || o.products || '';
+                    const tracking = o.tracking || o.Tracking_Number || 'Pending';
+                    const courier = o.courier || o.Courier_Service || 'Pending';
 
-                return `
-              <div style="background:#f9f9f9; padding:1rem; border-radius:8px; border:1px solid #eee;">
-                 <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
-                    <span style="font-weight:700;">#${orderId}</span>
-                    <span class="badge" style="font-size:0.75rem; background:${status === 'Delivered' ? '#10b981' : '#f59e0b'}; color:white; padding:2px 6px; border-radius:4px;">${status}</span>
-                 </div>
-                 <div style="font-size:0.85rem; color:#666; margin-bottom:0.5rem;">
-                    ${date ? new Date(date).toLocaleDateString() : 'Date unavailable'}
-                 </div>
-                 <div style="font-size:0.9rem; margin-bottom:0.5rem;">
-                    ${items ? (items.length > 60 ? items.substring(0, 60) + '...' : items) : 'Items info unavailable'}
-                 </div>
-                 <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #eee; padding-top:0.5rem; margin-top:0.5rem;">
-                    <span style="font-weight:700;">LKR ${total}</span>
-                    <button style="font-size:0.8rem; color:var(--primary); background:none; border:none; cursor:pointer;" onclick="alert('Tracking: ${tracking}\\nCourier: ${courier}')">Track Order</button>
-                 </div>
-              </div>
-            `;
-            }).join('');
+                    return `
+                  <div style="background:#f9f9f9; padding:1rem; border-radius:8px; border:1px solid #eee;">
+                     <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+                        <span style="font-weight:700;">#${orderId}</span>
+                        <span class="badge" style="font-size:0.75rem; background:${status === 'Delivered' ? '#10b981' : '#f59e0b'}; color:white; padding:2px 6px; border-radius:4px;">${status}</span>
+                     </div>
+                     <div style="font-size:0.85rem; color:#666; margin-bottom:0.5rem;">
+                        ${date ? new Date(date).toLocaleDateString() : 'Date unavailable'}
+                     </div>
+                     <div style="font-size:0.9rem; margin-bottom:0.5rem;">
+                        ${items ? (items.length > 60 ? items.substring(0, 60) + '...' : items) : 'Items info unavailable'}
+                     </div>
+                     <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #eee; padding-top:0.5rem; margin-top:0.5rem;">
+                        <span style="font-weight:700;">LKR ${total}</span>
+                        <button style="font-size:0.8rem; color:var(--primary); background:none; border:none; cursor:pointer;" onclick="alert('Tracking: ${tracking}\\nCourier: ${courier}')">Track Order</button>
+                     </div>
+                  </div>
+                `;
+                }).join('');
+            } else {
+                console.log('No orders found in response');
+                listDiv.innerHTML = '<div style="text-align:center; padding:2rem; color:#888;">No orders found yet. Place your first order!</div>';
+            }
         } else {
-            console.log('No orders found or empty response:', data);
-            listDiv.innerHTML = '<div style="text-align:center; padding:2rem; color:#888;">No orders found.</div>';
+            console.error('Backend returned error:', data.message || 'Unknown error');
+            listDiv.innerHTML = `<div style="text-align:center; padding:2rem; color:#ff4747;">Error: ${data.message || 'Failed to load orders'}</div>`;
         }
     } catch (err) {
         console.error('Failed to load order history:', err);
-        listDiv.innerHTML = '<div style="text-align:center; color:red;">Failed to load history. Please try again.</div>';
+        listDiv.innerHTML = '<div style="text-align:center; color:red;">Failed to load history. Please check your connection and try again.</div>';
     }
 }
 
@@ -1295,10 +1321,16 @@ async function handleCheckout(e) {
         const orderId = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
         const totalText = els.cartTotal.innerText.replace('LKR ', '').trim();
 
+        // If user is logged in, append Customer ID to name for easy tracking
+        let customerName = fd.get('cust-name');
+        if (currentUser && currentUser.id) {
+            customerName = `${customerName} (${currentUser.id})`;
+        }
+
         const orderData = {
             order_id: orderId,
             order_date: new Date().toLocaleString(),
-            customer_name: fd.get('cust-name'),
+            customer_name: customerName,
             customer_email: fd.get('cust-email'),
             contact_number: fd.get('cust-phone'),
             whatsapp_number: fd.get('cust-phone'),
