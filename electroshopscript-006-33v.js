@@ -1,6 +1,6 @@
 // --- Configuration ---
 if (typeof WEB_APP_URL === 'undefined') {
-    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwdOR9Zlx6Ce5law4PxRl4pn9Kxc772LbG3E-3qIXaq8vbgcV-5DtMV5i_qwlB6YWK_-A/exec';
+    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyxAVIoiD2dDKU_S4duqfMA5dDaRco1EYEeHCKXLjesmlepkV8vImy3llg-UlweqG0pfw/exec';
 }
 if (typeof GOOGLE_CLIENT_ID === 'undefined') {
     window.GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com";
@@ -605,7 +605,7 @@ async function loadCustomerOrders() {
                 }).join('') : 'Item details not available';
 
                 // Tracking Link
-                const trackLink = `https://koombiyodelivery.lk/Track/track_id?id=${o.courier || ''}&phone=${o.phone || ''}`;
+                const trackLink = `https://koombiyodelivery.lk/Track/track_id?id=${o.tracking || ''}&phone=${o.phone || ''}`;
 
                 return `
               <div style="background:#fff; padding:1.2rem; border-radius:12px; border:1px solid #edf2f7; margin-bottom:1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
@@ -621,6 +621,22 @@ async function loadCustomerOrders() {
                     </span>
                  </div>
                  
+                 <div style="background:#f8fafc; padding:0.8rem; border-radius:8px; margin-bottom:1.5rem;">
+                    <div style="font-weight:600; font-size:0.75rem; text-transform:uppercase; color:#a0aec0; margin-bottom:0.5rem;">Logistics Tracking</div>
+                    <div style="font-size:0.8rem; display:flex; flex-direction:column; gap:6px;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:1rem;">📦</span>
+                            <span style="color:#4a5568;">Shipped:</span>
+                            <span style="font-weight:600; color:#2d3748;">${o.shippedDate || 'Pending'}</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:1rem;">🏠</span>
+                            <span style="color:#4a5568;">Delivered:</span>
+                            <span style="font-weight:600; color:#2d3748;">${o.deliveredDate || '-'}</span>
+                        </div>
+                    </div>
+                 </div>
+
                  <div style="background:#f8fafc; padding:0.8rem; border-radius:8px; margin-bottom:1rem;">
                     <div style="font-weight:600; font-size:0.75rem; text-transform:uppercase; color:#a0aec0; margin-bottom:0.5rem;">Ordered Items</div>
                     ${itemsList}
@@ -1511,4 +1527,5 @@ function closeSuccessModal() { els.successModal.classList.add('hidden'); els.ove
 
 // Start
 init();
+
 
