@@ -1,6 +1,6 @@
 // --- Configuration ---
 if (typeof WEB_APP_URL === 'undefined') {
-    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzV-jPVDinE1vni4F-PHSC0eAOHu_vcwjDAFh28P7jLeG6PmwEU61VQ7cB9mxlPIeKJPg/exec';
+    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbybk62TgeLYmGNlmRxMaLfOTG1Vu9ZYHbx6o16-bNqLuK3KVUXu4BvvvoCenMZZZPEGtg/exec';
 }
 if (typeof GOOGLE_CLIENT_ID === 'undefined') {
     window.GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com";
@@ -584,21 +584,42 @@ async function loadCustomerOrders() {
         const data = await res.json();
 
         if (data.status === 'success' && data.data.length > 0) {
+            const getStatusColor = (status) => {
+                const s = String(status || "").toLowerCase();
+                if (s.includes('deliver')) return '#10b981'; // Green
+                if (s.includes('ship')) return '#3b82f6';   // Blue
+                if (s.includes('cancel')) return '#ef4444'; // Red
+                if (s.includes('process')) return '#8b5cf6'; // Purple
+                return '#f59e0b'; // Orange/Yellow for Pending/Others
+            };
+
             listDiv.innerHTML = data.data.map(o => `
-              <div style="background:#f9f9f9; padding:1rem; border-radius:8px; border:1px solid #eee;">
-                 <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
-                    <span style="font-weight:700;">#${o.orderId || o.Order_ID}</span>
-                    <span class="badge" style="font-size:0.75rem; background:${o.status === 'Delivered' ? '#10b981' : '#f59e0b'}; color:white; padding:2px 6px; border-radius:4px;">${o.status}</span>
+              <div style="background:#fff; padding:1.2rem; border-radius:12px; border:1px solid #edf2f7; margin-bottom:1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                 <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:0.8rem;">
+                    <div>
+                        <div style="font-weight:700; color:var(--text-main); font-size:1rem;">#${o.orderId}</div>
+                        <div style="font-size:0.8rem; color:#718096; margin-top:2px;">
+                           ${o.date ? new Date(o.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Date N/A'}
+                        </div>
+                    </div>
+                    <span style="font-size:0.7rem; font-weight:600; text-transform:uppercase; background:${getStatusColor(o.status)}; color:white; padding:4px 10px; border-radius:100px; letter-spacing:0.025em;">
+                        ${o.status || 'PENDING'}
+                    </span>
                  </div>
-                 <div style="font-size:0.85rem; color:#666; margin-bottom:0.5rem;">
-                    ${new Date(o.date).toLocaleDateString()}
+                 
+                 <div style="font-size:0.9rem; color:#4a5568; margin-bottom:1rem; line-height:1.4; background:#f8fafc; padding:0.8rem; border-radius:8px;">
+                    ${o.items ? (o.items.length > 100 ? o.items.substring(0, 100) + '...' : o.items) : 'Item details not available'}
                  </div>
-                 <div style="font-size:0.9rem; margin-bottom:0.5rem;">
-                    ${o.items ? o.items.substring(0, 60) + '...' : 'Items info unavailable'}
-                 </div>
-                 <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #eee; pt-2; mt-2;">
-                    <span style="font-weight:700;">LKR ${o.total}</span>
-                    <button style="font-size:0.8rem; color:var(--primary); background:none; border:none; cursor:pointer;" onclick="alert('Tracking: ${o.tracking || 'Pending'}\\nCourier: ${o.courier || 'Pending'}')">Track Order</button>
+
+                 <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #edf2f7; padding-top:1rem;">
+                    <div>
+                        <span style="font-size:0.8rem; color:#718096;">Total Paid</span>
+                        <div style="font-weight:700; color:var(--primary); font-size:1.1rem;">LKR ${parseFloat(o.total || 0).toLocaleString()}</div>
+                    </div>
+                    <button style="padding: 0.5rem 1rem; font-size:0.85rem; font-weight:600; color:var(--primary); background:#ebf4ff; border:none; border-radius:6px; cursor:pointer;" 
+                        onclick="alert('Order ID: ${o.orderId}\\n\\nStatus: ${o.status || 'Pending'}\\nCourier: ${o.courier || 'Not Assigned'}\\nTracking: ${o.tracking || 'Not Available'}')">
+                        Track Details
+                    </button>
                  </div>
               </div>
             `).join('');
@@ -1438,5 +1459,3 @@ function closeSuccessModal() { els.successModal.classList.add('hidden'); els.ove
 
 // Start
 init();
-
-
