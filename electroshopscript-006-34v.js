@@ -1,6 +1,6 @@
 // --- Configuration ---
 if (typeof WEB_APP_URL === 'undefined') {
-    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyxAVIoiD2dDKU_S4duqfMA5dDaRco1EYEeHCKXLjesmlepkV8vImy3llg-UlweqG0pfw/exec';
+    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbySbrKU8dT6Hxfci3OBqW9gobNtqgJTnmbdpW2JIi8ro_Ot3w4Yc1nIKBLasGEHcW_oDw/exec';
 }
 if (typeof GOOGLE_CLIENT_ID === 'undefined') {
     window.GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com";
@@ -661,7 +661,13 @@ async function loadCustomerOrders() {
                             </a>
                         ` : ''}
 
-                        ${!canCancel && !isReadyForTrack ? `
+                        ${["shipped", "ready"].includes(status.toLowerCase().trim()) ? `
+                            <button onclick="handleConfirmDelivery('${o.orderId}')" style="padding: 0.5rem 0.8rem; font-size:0.8rem; font-weight:600; color:#10b981; background:#f0fdf4; border:1px solid #dcfce7; border-radius:6px; cursor:pointer;">
+                                ✅ Received
+                            </button>
+                        ` : ''}
+
+                        ${!canCancel && !isReadyForTrack && !["shipped", "ready"].includes(status.toLowerCase().trim()) ? `
                             <button style="padding: 0.5rem 0.8rem; font-size:0.8rem; font-weight:600; color:#718096; background:#f7fafc; border:1px solid #edf2f7; border-radius:6px; cursor:default;">
                                 Details Added
                             </button>
@@ -694,6 +700,26 @@ async function handleCancelOrder(orderId) {
             loadCustomerOrders(); // Refresh list
         } else {
             alert("Failed to cancel: " + data.message);
+        }
+    } catch (err) {
+        alert("Connection Error. Please try again.");
+    }
+}
+
+async function handleConfirmDelivery(orderId) {
+    if (!confirm("Confirm you have received this order? Status will be updated to Delivered.")) return;
+
+    try {
+        const res = await fetch(WEB_APP_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'confirm_delivery', orderId: orderId })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+            alert("Order marked as Delivered! Thank you for shopping with us.");
+            loadCustomerOrders(); // Refresh list
+        } else {
+            alert("Error: " + data.message);
         }
     } catch (err) {
         alert("Connection Error. Please try again.");
