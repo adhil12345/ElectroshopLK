@@ -1,9 +1,10 @@
-
 // --- Configuration ---
-// PASTE YOUR GOOGLE WEB APP URL HERE AFTER DEPLOYING
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz4w4eaURM9HUvupXKmDex2kG9F6RIU5B0gyPnNfT410LPWxvJ_ZSlQg7ri9Rl2q5jckA/exec';
-const GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com"; // User must replace this
-// Example: https://script.google.com/macros/s/AKfycb.../exec
+if (typeof WEB_APP_URL === 'undefined') {
+    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz4w4eaURM9HUvupXKmDex2kG9F6RIU5B0gyPnNfT410LPWxvJ_ZSlQg7ri9Rl2q5jckA/exec';
+}
+if (typeof GOOGLE_CLIENT_ID === 'undefined') {
+    window.GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com";
+}
 
 let DELIVERY_CHARGE = 350; // LKR default (will be updated by settings)
 
