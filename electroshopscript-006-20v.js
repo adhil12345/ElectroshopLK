@@ -1302,6 +1302,18 @@ function updateCartUI() {
 }
 function toggleCart() {
     els.cartDrawer.classList.toggle('hidden');
+
+    // Auto-fill checkout form if user is logged in
+    if (!els.cartDrawer.classList.contains('hidden') && currentUser) {
+        const form = els.checkoutForm;
+        if (form) {
+            if (currentUser.name) form.elements['cust-name'].value = currentUser.name;
+            if (currentUser.email) form.elements['cust-email'].value = currentUser.email;
+            if (currentUser.phone) form.elements['cust-phone'].value = currentUser.phone;
+            if (currentUser.address) form.elements['cust-address'].value = currentUser.address;
+        }
+    }
+
     if (!els.cartDrawer.classList.contains('hidden')) els.overlay.classList.remove('hidden');
     else if (els.modal.classList.contains('hidden') && els.infoModal.classList.contains('hidden')) els.overlay.classList.add('hidden');
 }
@@ -1324,7 +1336,7 @@ async function handleCheckout(e) {
             order_id: orderId,
             order_date: new Date().toLocaleString(),
             customer_name: fd.get('cust-name'),
-            customer_email: fd.get('cust-email'), // ✅ Keep this
+            customer_email: fd.get('cust-email'),
             contact_number: fd.get('cust-phone'),
             whatsapp_number: fd.get('cust-phone'),
             full_address: fd.get('cust-address'),
@@ -1334,7 +1346,8 @@ async function handleCheckout(e) {
             subtotal: els.cartSubtotal.innerText.replace('LKR ', '').trim(),
             delivery_charge: DELIVERY_CHARGE,
             total_price: totalText,
-            items_summary: cart.map(i => `(${i.id}) ${i.qty} x ${i.name} @ LKR ${i.price}`).join(',\n')
+            items_summary: cart.map(i => `(${i.id}) ${i.qty} x ${i.name} @ LKR ${i.price}`).join(',\n'),
+            customer_id: currentUser ? currentUser.id : '' // ✅ Added User ID
         };
 
         // Send to Google Sheet
