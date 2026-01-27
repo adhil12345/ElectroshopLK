@@ -120,28 +120,39 @@ function bindEvents() {
         }
     });
 
-    document.getElementById('cart-toggle').addEventListener('click', toggleCart);
-    document.getElementById('close-cart').addEventListener('click', toggleCart);
-    document.getElementById('close-product-modal').addEventListener('click', closeModal);
-    document.querySelector('.close-info-modal').addEventListener('click', closeInfoModal);
+    const addEvent = (id, type, fn) => {
+        const el = id.startsWith('.') || id.startsWith('#') ? document.querySelector(id) : document.getElementById(id);
+        if (el) el.addEventListener(type, fn);
+    };
+
+    addEvent('cart-toggle', 'click', toggleCart);
+    addEvent('close-cart', 'click', toggleCart);
+    addEvent('close-product-modal', 'click', closeModal);
+    addEvent('.close-info-modal', 'click', closeInfoModal);
 
     // Auth Events
-    els.userBtn.addEventListener('click', () => {
-        if (currentUser) openAccountModal();
-        else openAuthModal();
-    });
-    els.closeAuthModal.addEventListener('click', () => {
-        els.authModal.classList.add('hidden');
-        els.overlay.classList.add('hidden');
-    });
-    els.closeAccountModal.addEventListener('click', () => {
-        els.accountModal.classList.add('hidden');
-        els.overlay.classList.add('hidden');
-    });
+    if (els.userBtn) {
+        els.userBtn.addEventListener('click', () => {
+            if (currentUser) openAccountModal();
+            else openAuthModal();
+        });
+    }
+    if (els.closeAuthModal) {
+        els.closeAuthModal.addEventListener('click', () => {
+            els.authModal.classList.add('hidden');
+            els.overlay.classList.add('hidden');
+        });
+    }
+    if (els.closeAccountModal) {
+        els.closeAccountModal.addEventListener('click', () => {
+            els.accountModal.classList.add('hidden');
+            els.overlay.classList.add('hidden');
+        });
+    }
 
     // Login / Register Submit
-    els.loginForm.addEventListener('submit', handleCustomerLogin);
-    els.registerForm.addEventListener('submit', handleCustomerRegister);
+    if (els.loginForm) els.loginForm.addEventListener('submit', handleCustomerLogin);
+    if (els.registerForm) els.registerForm.addEventListener('submit', handleCustomerRegister);
 
     // Settings Submit
     if (els.updateProfileForm) els.updateProfileForm.addEventListener('submit', handleProfileUpdate);
@@ -149,6 +160,7 @@ function bindEvents() {
 
     // Expose toggleAuthMode globally
     window.toggleAuthMode = (mode) => {
+        if (!els.loginSection || !els.registerSection) return;
         if (mode === 'register') {
             els.loginSection.classList.add('hidden');
             els.registerSection.classList.remove('hidden');
@@ -160,72 +172,97 @@ function bindEvents() {
 
     window.switchAccountTab = (tab) => {
         document.querySelectorAll('.account-nav .btn-outline').forEach(b => b.classList.remove('active'));
-        document.getElementById(`btn-tab-${tab}`).classList.add('active');
+        const tabBtn = document.getElementById(`btn-tab-${tab}`);
+        if (tabBtn) tabBtn.classList.add('active');
 
-        document.getElementById('tab-orders').classList.add('hidden');
-        document.getElementById('tab-settings').classList.add('hidden');
+        const tabOrders = document.getElementById('tab-orders');
+        const tabSettings = document.getElementById('tab-settings');
+        if (tabOrders) tabOrders.classList.add('hidden');
+        if (tabSettings) tabSettings.classList.add('hidden');
 
-        document.getElementById(`tab-${tab}`).classList.remove('hidden');
+        const targetTab = document.getElementById(`tab-${tab}`);
+        if (targetTab) targetTab.classList.remove('hidden');
     };
 
     window.logoutCustomer = () => {
         localStorage.removeItem('electro_customer');
         currentUser = null;
-        els.accountModal.classList.add('hidden');
-        els.overlay.classList.add('hidden');
+        if (els.accountModal) els.accountModal.classList.add('hidden');
+        if (els.overlay) els.overlay.classList.add('hidden');
         alert("Logged out successfully");
     };
 
-    els.overlay.addEventListener('click', () => {
-        closeModal();
-        closeInfoModal();
-        els.cartDrawer.classList.add('hidden');
-        els.authModal.classList.add('hidden');
-        els.accountModal.classList.add('hidden');
-        els.overlay.classList.add('hidden');
-    });
+    if (els.overlay) {
+        els.overlay.addEventListener('click', () => {
+            closeModal();
+            closeInfoModal();
+            if (els.cartDrawer) els.cartDrawer.classList.add('hidden');
+            if (els.authModal) els.authModal.classList.add('hidden');
+            if (els.accountModal) els.accountModal.classList.add('hidden');
+            els.overlay.classList.add('hidden');
+        });
+    }
 
     // Search Events
-    els.searchBtn.addEventListener('click', handleSearch);
-    els.searchInput.addEventListener('keyup', (e) => {
-        if (e.key === 'Enter') handleSearch();
-    });
+    if (els.searchBtn) els.searchBtn.addEventListener('click', handleSearch);
+    if (els.searchInput) {
+        els.searchInput.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') handleSearch();
+        });
+    }
 
-    els.btnPlus.addEventListener('click', () => {
-        if (currentModalProduct && currentQty < (currentModalProduct.quantity || 99)) {
-            currentQty++; els.qtyInput.value = currentQty;
-        }
-    });
-    els.btnMinus.addEventListener('click', () => { if (currentQty > 1) currentQty--; els.qtyInput.value = currentQty; });
+    if (els.btnPlus) {
+        els.btnPlus.addEventListener('click', () => {
+            if (currentModalProduct && currentQty < (currentModalProduct.quantity || 99)) {
+                currentQty++; if (els.qtyInput) els.qtyInput.value = currentQty;
+            }
+        });
+    }
+    if (els.btnMinus) {
+        els.btnMinus.addEventListener('click', () => {
+            if (currentQty > 1) {
+                currentQty--; if (els.qtyInput) els.qtyInput.value = currentQty;
+            }
+        });
+    }
 
-    els.addToCartBtn.addEventListener('click', () => {
-        if (currentModalProduct) {
-            addToCart(currentModalProduct, currentQty);
-            closeModal();
-            toggleCart();
-        }
-    });
+    if (els.addToCartBtn) {
+        els.addToCartBtn.addEventListener('click', () => {
+            if (currentModalProduct) {
+                addToCart(currentModalProduct, currentQty);
+                closeModal();
+                toggleCart();
+            }
+        });
+    }
 
-    els.buyNowBtn.addEventListener('click', () => {
-        if (currentModalProduct) {
-            addToCart(currentModalProduct, currentQty);
-            closeModal();
-            toggleCart();
-            setTimeout(() => {
-                document.querySelector('.checkout-section').scrollIntoView({ behavior: 'smooth' });
-            }, 300);
-        }
-    });
+    if (els.buyNowBtn) {
+        els.buyNowBtn.addEventListener('click', () => {
+            if (currentModalProduct) {
+                addToCart(currentModalProduct, currentQty);
+                closeModal();
+                toggleCart();
+                setTimeout(() => {
+                    const checkoutSec = document.querySelector('.checkout-section');
+                    if (checkoutSec) checkoutSec.scrollIntoView({ behavior: 'smooth' });
+                }, 300);
+            }
+        });
+    }
 
     // Payment Toggle
-    Array.from(els.paymentRadios).forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            document.querySelectorAll('.radio-card').forEach(c => c.classList.remove('selected'));
-            e.target.closest('.radio-card').classList.add('selected');
-            if (e.target.value === 'bank') els.bankDetails.classList.remove('hidden');
-            else els.bankDetails.classList.add('hidden');
+    if (els.paymentRadios) {
+        Array.from(els.paymentRadios).forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                document.querySelectorAll('.radio-card').forEach(c => c.classList.remove('selected'));
+                e.target.closest('.radio-card').classList.add('selected');
+                if (els.bankDetails) {
+                    if (e.target.value === 'bank') els.bankDetails.classList.remove('hidden');
+                    else els.bankDetails.classList.add('hidden');
+                }
+            });
         });
-    });
+    }
 
     // Info Links
     document.querySelectorAll('.info-link').forEach(link => {
@@ -235,7 +272,7 @@ function bindEvents() {
         });
     });
 
-    els.checkoutForm.addEventListener('submit', handleCheckout);
+    if (els.checkoutForm) els.checkoutForm.addEventListener('submit', handleCheckout);
 }
 
 function initGoogleLogin() {
