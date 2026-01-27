@@ -1,7 +1,7 @@
 
 // --- Configuration ---
 // PASTE YOUR GOOGLE WEB APP URL HERE AFTER DEPLOYING
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzQOZiO2TxT1hf-OYqmkvGYwd-UbCG3tIX7-86qMj6vdhzzFzMmtZO-Lo4ptHFitj7cWQ/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz4w4eaURM9HUvupXKmDex2kG9F6RIU5B0gyPnNfT410LPWxvJ_ZSlQg7ri9Rl2q5jckA/exec';
 const GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com"; // User must replace this
 // Example: https://script.google.com/macros/s/AKfycb.../exec
 
@@ -337,17 +337,28 @@ function openAccountModal() {
 
     // Populate UI
     if (currentUser) {
-        document.getElementById('user-initial').innerText = currentUser.name.charAt(0).toUpperCase();
-        document.getElementById('user-name-display').innerText = currentUser.name;
-        document.getElementById('user-id-display').innerText = currentUser.id;
-        document.getElementById('user-email-display').innerText = currentUser.email;
-        document.getElementById('user-phone-display').innerText = currentUser.phone || '';
-        document.getElementById('user-addr-display').innerText = currentUser.address || '';
+        const userInitial = document.getElementById('user-initial');
+        const userNameDisplay = document.getElementById('user-name-display');
+        const userIdDisplay = document.getElementById('user-id-display');
+        const userEmailDisplay = document.getElementById('user-email-display');
+        const userPhoneDisplay = document.getElementById('user-phone-display');
+        const userAddrDisplay = document.getElementById('user-addr-display');
+
+        if (userInitial) userInitial.innerText = currentUser.name.charAt(0).toUpperCase();
+        if (userNameDisplay) userNameDisplay.innerText = currentUser.name;
+        if (userIdDisplay) userIdDisplay.innerText = currentUser.id;
+        if (userEmailDisplay) userEmailDisplay.innerText = currentUser.email;
+        if (userPhoneDisplay) userPhoneDisplay.innerText = currentUser.phone || '';
+        if (userAddrDisplay) userAddrDisplay.innerText = currentUser.address || '';
 
         // Populate settings inputs
-        document.getElementById('upd-name').value = currentUser.name;
-        document.getElementById('upd-phone').value = currentUser.phone || '';
-        document.getElementById('upd-address').value = currentUser.address || '';
+        const updName = document.getElementById('upd-name');
+        const updPhone = document.getElementById('upd-phone');
+        const updAddress = document.getElementById('upd-address');
+
+        if (updName) updName.value = currentUser.name;
+        if (updPhone) updPhone.value = currentUser.phone || '';
+        if (updAddress) updAddress.value = currentUser.address || '';
 
         // Default to Orders tab
         window.switchAccountTab('orders');
@@ -528,9 +539,9 @@ async function loadCustomerOrders() {
     try {
         const res = await fetch(WEB_APP_URL, {
             method: 'POST',
-            body: JSON.stringify({ action: 'get_customer_orders', customerId: currentUser.email })
+            body: JSON.stringify({ action: 'get_customer_orders', customerId: currentUser.id })
         });
-        // Note: passing email as ID fallback as discussed in backend logic
+        // Using customer ID for order lookup
 
         const data = await res.json();
 
