@@ -605,7 +605,7 @@ async function loadCustomerOrders() {
                 }).join('') : 'Item details not available';
 
                 // Tracking Link
-                const trackLink = `https://koombiyodelivery.lk/Track/track_id?id=${o.tracking || ''}&phone=${o.phone || ''}`;
+                const trackLink = `https://koombiyodelivery.lk/Track/track_id?id=${o.courier || ''}&phone=${o.phone || ''}`;
 
                 return `
               <div style="background:#fff; padding:1.2rem; border-radius:12px; border:1px solid #edf2f7; margin-bottom:1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
@@ -1511,3 +1511,4 @@ function closeSuccessModal() { els.successModal.classList.add('hidden'); els.ove
 
 // Start
 init();
+
