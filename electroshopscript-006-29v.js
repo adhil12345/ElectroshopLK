@@ -1,6 +1,6 @@
 // --- Configuration ---
 if (typeof WEB_APP_URL === 'undefined') {
-    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz4w4eaURM9HUvupXKmDex2kG9F6RIU5B0gyPnNfT410LPWxvJ_ZSlQg7ri9Rl2q5jckA/exec';
+    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyIuvAWoqI7hhUDY-oPXEWDCHTFpIoZztd0z1vPSEpiCCFNo4rDNB2lYWxr04xxg_-eyg/exec';
 }
 if (typeof GOOGLE_CLIENT_ID === 'undefined') {
     window.GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com";
@@ -1511,3 +1511,4 @@ function closeSuccessModal() { els.successModal.classList.add('hidden'); els.ove
 
 // Start
 init();
+
