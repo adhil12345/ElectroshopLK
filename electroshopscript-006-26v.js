@@ -1,6 +1,6 @@
 // --- Configuration ---
 if (typeof WEB_APP_URL === 'undefined') {
-    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzrMhVFsr4PqdBU8rsVgs29VmGCzgXYT43XIjMxtLrMSAtXIjK49JEjdr9JzNSZrzV5mQ/exec';
+    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwi2qSQ8L7BNe0sN1x6WDipLLvkdwOeAxfwIu0IshFsEsTxnlD7TwbxGM0TC9ovhtGllw/exec';
 }
 if (typeof GOOGLE_CLIENT_ID === 'undefined') {
     window.GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com";
@@ -604,8 +604,8 @@ async function loadCustomerOrders() {
                     return `<div style="padding: 4px 0; border-bottom: 1px dashed #edf2f7; font-size: 0.85rem;">• ${cleanItem}</div>`;
                 }).join('') : 'Item details not available';
 
-                // Tracking Link
-                const trackLink = `https://koombiyodelivery.lk/Track/track_id?id=${o.tracking || ''}&phone=${o.phone || ''}`;
+                // Tracking Link: Priority to link in "Courier_Service" column, fallback to Koombiyo formula
+                let trackLink = o.courier && String(o.courier).startsWith('http') ? o.courier : `https://koombiyodelivery.lk/Track/track_id?id=${o.tracking || ''}&phone=${o.phone || ''}`;
 
                 return `
               <div style="background:#fff; padding:1.2rem; border-radius:12px; border:1px solid #edf2f7; margin-bottom:1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
