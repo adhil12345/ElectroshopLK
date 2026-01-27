@@ -1,6 +1,6 @@
 // --- Configuration ---
 if (typeof WEB_APP_URL === 'undefined') {
-    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbybk62TgeLYmGNlmRxMaLfOTG1Vu9ZYHbx6o16-bNqLuK3KVUXu4BvvvoCenMZZZPEGtg/exec';
+    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzrMhVFsr4PqdBU8rsVgs29VmGCzgXYT43XIjMxtLrMSAtXIjK49JEjdr9JzNSZrzV5mQ/exec';
 }
 if (typeof GOOGLE_CLIENT_ID === 'undefined') {
     window.GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com";
@@ -579,7 +579,6 @@ async function loadCustomerOrders() {
             method: 'POST',
             body: JSON.stringify({ action: 'get_customer_orders', customerId: currentUser.id })
         });
-        // Using customer ID for order lookup
 
         const data = await res.json();
 
@@ -588,47 +587,100 @@ async function loadCustomerOrders() {
                 const s = String(status || "").toLowerCase();
                 if (s.includes('deliver')) return '#10b981'; // Green
                 if (s.includes('ship')) return '#3b82f6';   // Blue
+                if (s.includes('ready')) return '#0ea5e9';  // Light Blue
                 if (s.includes('cancel')) return '#ef4444'; // Red
                 if (s.includes('process')) return '#8b5cf6'; // Purple
-                return '#f59e0b'; // Orange/Yellow for Pending/Others
+                return '#f59e0b'; // Orange/Yellow for Pending
             };
 
-            listDiv.innerHTML = data.data.map(o => `
+            listDiv.innerHTML = data.data.map(o => {
+                const status = String(o.status || "Pending");
+                const canCancel = ["pending", "processing", ""].includes(status.toLowerCase().trim());
+                const isReadyForTrack = ["ready", "shipped", "delivered"].includes(status.toLowerCase().trim());
+
+                // Parse items: (ID) Qty x Name @ Price, ...
+                const itemsList = o.items ? o.items.split(',\n').map(item => {
+                    const cleanItem = item.replace(/^\(\d+\)\s*/, ''); // Remove the (ID) part
+                    return `<div style="padding: 4px 0; border-bottom: 1px dashed #edf2f7; font-size: 0.85rem;">• ${cleanItem}</div>`;
+                }).join('') : 'Item details not available';
+
+                // Tracking Link
+                const trackLink = `https://koombiyodelivery.lk/Track/track_id?id=${o.tracking || ''}&phone=${o.phone || ''}`;
+
+                return `
               <div style="background:#fff; padding:1.2rem; border-radius:12px; border:1px solid #edf2f7; margin-bottom:1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
                  <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:0.8rem;">
                     <div>
                         <div style="font-weight:700; color:var(--text-main); font-size:1rem;">#${o.orderId}</div>
                         <div style="font-size:0.8rem; color:#718096; margin-top:2px;">
-                           ${o.date ? new Date(o.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Date N/A'}
+                           ${o.date ? new Date(o.date).toLocaleDateString('en-GB') : 'Date N/A'}
                         </div>
                     </div>
-                    <span style="font-size:0.7rem; font-weight:600; text-transform:uppercase; background:${getStatusColor(o.status)}; color:white; padding:4px 10px; border-radius:100px; letter-spacing:0.025em;">
-                        ${o.status || 'PENDING'}
+                    <span style="font-size:0.7rem; font-weight:600; text-transform:uppercase; background:${getStatusColor(status)}; color:white; padding:4px 10px; border-radius:100px; letter-spacing:0.025em;">
+                        ${status}
                     </span>
                  </div>
                  
-                 <div style="font-size:0.9rem; color:#4a5568; margin-bottom:1rem; line-height:1.4; background:#f8fafc; padding:0.8rem; border-radius:8px;">
-                    ${o.items ? (o.items.length > 100 ? o.items.substring(0, 100) + '...' : o.items) : 'Item details not available'}
+                 <div style="background:#f8fafc; padding:0.8rem; border-radius:8px; margin-bottom:1rem;">
+                    <div style="font-weight:600; font-size:0.75rem; text-transform:uppercase; color:#a0aec0; margin-bottom:0.5rem;">Ordered Items</div>
+                    ${itemsList}
                  </div>
 
-                 <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #edf2f7; padding-top:1rem;">
+                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div>
                         <span style="font-size:0.8rem; color:#718096;">Total Paid</span>
                         <div style="font-weight:700; color:var(--primary); font-size:1.1rem;">LKR ${parseFloat(o.total || 0).toLocaleString()}</div>
                     </div>
-                    <button style="padding: 0.5rem 1rem; font-size:0.85rem; font-weight:600; color:var(--primary); background:#ebf4ff; border:none; border-radius:6px; cursor:pointer;" 
-                        onclick="alert('Order ID: ${o.orderId}\\n\\nStatus: ${o.status || 'Pending'}\\nCourier: ${o.courier || 'Not Assigned'}\\nTracking: ${o.tracking || 'Not Available'}')">
-                        Track Details
-                    </button>
+                    
+                    <div style="display:flex; gap:0.5rem;">
+                        ${canCancel ? `
+                            <button onclick="handleCancelOrder('${o.orderId}')" style="padding: 0.5rem 0.8rem; font-size:0.8rem; font-weight:600; color:#ef4444; background:#fef2f2; border:1px solid #fee2e2; border-radius:6px; cursor:pointer;">
+                                Cancel Order
+                            </button>
+                        ` : ''}
+
+                        ${isReadyForTrack ? `
+                            <a href="${trackLink}" target="_blank" style="text-decoration:none; padding: 0.5rem 0.8rem; font-size:0.8rem; font-weight:600; color:#3b82f6; background:#eff6ff; border:1px solid #dbeafe; border-radius:6px; display:inline-block;">
+                                🚚 Track Order
+                            </a>
+                        ` : ''}
+
+                        ${!canCancel && !isReadyForTrack ? `
+                            <button style="padding: 0.5rem 0.8rem; font-size:0.8rem; font-weight:600; color:#718096; background:#f7fafc; border:1px solid #edf2f7; border-radius:6px; cursor:default;">
+                                Details Added
+                            </button>
+                        ` : ''}
+                    </div>
                  </div>
               </div>
-            `).join('');
+            `;
+            }).join('');
         } else {
             listDiv.innerHTML = '<div style="text-align:center; padding:2rem; color:#888;">No orders found.</div>';
         }
     } catch (err) {
         console.warn(err);
         listDiv.innerHTML = '<div style="text-align:center; color:red;">Failed to load history.</div>';
+    }
+}
+
+async function handleCancelOrder(orderId) {
+    if (!confirm("Are you sure you want to cancel this order?")) return;
+
+    try {
+        const res = await fetch(WEB_APP_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'cancel_order', orderId: orderId })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+            alert("Order cancelled successfully.");
+            loadCustomerOrders(); // Refresh list
+        } else {
+            alert("Failed to cancel: " + data.message);
+        }
+    } catch (err) {
+        alert("Connection Error. Please try again.");
     }
 }
 
