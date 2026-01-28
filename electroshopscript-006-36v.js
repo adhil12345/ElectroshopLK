@@ -1,12 +1,18 @@
 // --- Configuration ---
 if (typeof WEB_APP_URL === 'undefined') {
-    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz8K75DN2kRzUUibMydz07lMzvsdILLu0b4Ml-Ff3VXBZgYCJ3av1VnyfEu3RXVXDmTkQ/exec';
+    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzLfE9iiXtUe_qRi1ufh0Ng9LZdvilGlPuR4TXGqbwvKik0bvibdY5o6Qmcu_vDQTnvBg/exec';
 }
 if (typeof GOOGLE_CLIENT_ID === 'undefined') {
     window.GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com";
 }
 
 let DELIVERY_CHARGE = 350; // LKR default (will be updated by settings)
+
+function getStandardDate() {
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
 
 // --- State ---
 let allProducts = [];
@@ -1453,7 +1459,7 @@ async function handleCheckout(e) {
 
         const orderData = {
             order_id: orderId,
-            order_date: new Date().toLocaleString('en-GB'), // Use stable locale
+            order_date: getStandardDate(), // Standard format YYYY-MM-DD HH:mm:ss
             customer_name: fd.get('cust-name'),
             customer_email: fd.get('cust-email'),
             contact_number: fd.get('cust-phone'),
