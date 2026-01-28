@@ -1,6 +1,6 @@
 // --- Configuration ---
 if (typeof WEB_APP_URL === 'undefined') {
-    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbySbrKU8dT6Hxfci3OBqW9gobNtqgJTnmbdpW2JIi8ro_Ot3w4Yc1nIKBLasGEHcW_oDw/exec';
+    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz8K75DN2kRzUUibMydz07lMzvsdILLu0b4Ml-Ff3VXBZgYCJ3av1VnyfEu3RXVXDmTkQ/exec';
 }
 if (typeof GOOGLE_CLIENT_ID === 'undefined') {
     window.GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com";
@@ -276,29 +276,33 @@ function bindEvents() {
 }
 
 function initGoogleLogin() {
-    if (typeof google === 'undefined') return; // Library not loaded
+    if (typeof google === 'undefined') {
+        console.warn("Google Sign-In: Library not loaded yet, retrying in 1s...");
+        setTimeout(initGoogleLogin, 1000);
+        return;
+    }
 
-    if (GOOGLE_CLIENT_ID.includes("YOUR_GOOGLE_CLIENT_ID_HERE")) {
-        console.warn("Google Login Skipped: GOOGLE_CLIENT_ID is not configured in Electroshop-script.js");
+    const clientId = window.GOOGLE_CLIENT_ID;
+    if (!clientId || clientId.includes("YOUR_GOOGLE_CLIENT_ID_HERE")) {
+        console.warn("Google Login Skipped: GOOGLE_CLIENT_ID is not configured.");
         return;
     }
 
     try {
         google.accounts.id.initialize({
-            client_id: GOOGLE_CLIENT_ID,
+            client_id: clientId,
             callback: handleGoogleCredential
         });
 
-        // Render Button if container exists
         const btnContainer = document.getElementById('google-btn-container');
         if (btnContainer) {
             google.accounts.id.renderButton(
                 btnContainer,
-                { theme: "outline", size: "large", width: 350 }  // customization attributes
+                { theme: "outline", size: "large", width: 350 }
             );
         }
     } catch (e) {
-        console.warn("Google Sign-In Init Failed (Check Client ID)", e);
+        console.error("Google Sign-In Error:", e);
     }
 }
 
@@ -1449,7 +1453,7 @@ async function handleCheckout(e) {
 
         const orderData = {
             order_id: orderId,
-            order_date: new Date().toLocaleString(),
+            order_date: new Date().toLocaleString('en-GB'), // Use stable locale
             customer_name: fd.get('cust-name'),
             customer_email: fd.get('cust-email'),
             contact_number: fd.get('cust-phone'),
