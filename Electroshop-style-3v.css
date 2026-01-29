@@ -49,10 +49,6 @@ body {
   cursor: pointer;
   transition: transform 0.1s, opacity 0.2s;
 }
-div#tab-orders {
-    width: fit-content;
-}
-
 
 .btn-primary {
   background: var(--primary);
@@ -1087,8 +1083,130 @@ span#modal-price {
   color: var(--primary);
   font-weight: 700;
 }
-
-div#modal-details-container {
-    margin: 0px 25px;
+/* --- Customer Feedback --- */
+.reviews-section h3 {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
 }
 
+.star-rating-input .star.active {
+  color: #f59e0b; /* Golden star */
+}
+
+.star-rating-input .star:hover,
+.star-rating-input .star:hover ~ .star {
+  /* This logic is handled better via JS, but basic hover: */
+  transform: scale(1.1);
+}
+
+.review-card {
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.review-card:last-child {
+  border-bottom: none;
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.review-user {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.review-date {
+  font-size: 0.8rem;
+  color: #999;
+}
+
+.review-stars {
+  color: #f59e0b;
+  font-size: 0.9rem;
+}
+
+.review-comment {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #444;
+}
+
+.review-images {
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.review-thumb {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+  cursor: zoom-in;
+  transition: transform 0.2s;
+}
+
+.review-thumb:hover {
+  transform: scale(1.05);
+}
+
+.p-rating-badge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #fff9eb;
+    color: #f59e0b;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    width: fit-content;
+    margin-bottom: 0.4rem;
+}
+
+/* Review Photo Upload Previews */
+.upload-preview-item {
+    position: relative;
+    width: 60px;
+    height: 60px;
+}
+
+.upload-preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.upload-preview-remove {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #f44336;
+    color: white;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    cursor: pointer;
+    border: none;
+}
+
+@media (max-width: 600px) {
+  .product-split {
+    grid-template-columns: 1fr;
+  }
+}
