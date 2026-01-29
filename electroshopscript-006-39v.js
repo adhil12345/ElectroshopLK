@@ -1,6 +1,6 @@
 // --- Configuration ---
 if (typeof WEB_APP_URL === 'undefined') {
-    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz_ozaR5ig7f0HzOwNm0WFBsR4_6KuO4BGB8Co3fzlBTVnlM0x8uh0C_uogxlQKGv7nnQ/exec';
+    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyX4ui9slMjSOqHnRQ-7E4Vm2-8ICzQKlL7-KxZJ8ERL597vhWGxGW6lu4GKX9Z9jpOTg/exec';
 }
 if (typeof GOOGLE_CLIENT_ID === 'undefined') {
     window.GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com";
@@ -719,7 +719,13 @@ async function loadCustomerOrders() {
                             </button>
                         ` : ''}
 
-                        ${!canCancel && !isReadyForTrack && !["shipped", "ready"].includes(status.toLowerCase().trim()) ? `
+                        ${status.toLowerCase() === 'delivered' ? `
+                            <button onclick="scrollToReview()" style="padding: 0.5rem 0.8rem; font-size:0.8rem; font-weight:600; color:#6366f1; background:#eef2ff; border:1px solid #e0e7ff; border-radius:6px; cursor:pointer;">
+                                ⭐ Review Items
+                            </button>
+                        ` : ''}
+
+                        ${!canCancel && !isReadyForTrack && !["shipped", "ready", "delivered"].includes(status.toLowerCase().trim()) ? `
                             <button style="padding: 0.5rem 0.8rem; font-size:0.8rem; font-weight:600; color:#718096; background:#f7fafc; border:1px solid #edf2f7; border-radius:6px; cursor:default;">
                                 Details Added
                             </button>
@@ -1665,6 +1671,12 @@ async function loadProductFeedback(productId) {
                         ${r.images.map(img => `<img src="${img}" class="review-thumb" onclick="window.open('${img}', '_blank')">`).join('')}
                       </div>
                     ` : ''}
+                    ${r.reply ? `
+                      <div class="staff-reply" style="background:#f8fafc; border-left:3px solid var(--primary); padding:0.8rem; margin-top:0.8rem; border-radius:4px; font-size:0.85rem;">
+                        <div style="font-weight:700; color:var(--primary); margin-bottom:4px;">Seller Reply:</div>
+                        ${r.reply}
+                      </div>
+                    ` : ''}
                   </div>
                 `).join('');
             } else {
@@ -1742,6 +1754,11 @@ function toBase64(file) {
         reader.onload = () => resolve(reader.result);
         reader.onerror = error => reject(error);
     });
+}
+
+function scrollToReview() {
+    closeModal();
+    alert("Please select a product from the shop to leave your review. You can only review products you have already purchased and received.");
 }
 
 init();
