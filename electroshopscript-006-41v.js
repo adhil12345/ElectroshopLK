@@ -1,6 +1,6 @@
 // --- Configuration ---
 if (typeof WEB_APP_URL === 'undefined') {
-    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwgVBe2RvbI9BdmmudYvUsYGc0GN9hah2CUMwrEARLLc96H863w2vLWajaR0rRLvfGtgg/exec';
+    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx3bnskKsvUE6_attg0rBL_B-GTnKgrT9ZDklshjzLxKyavdFdM08g03axljXTh85-N_w/exec';
 }
 if (typeof GOOGLE_CLIENT_ID === 'undefined') {
     window.GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com";
@@ -1188,27 +1188,7 @@ function openModal(product, pushState = true) {
     els.mPrice.innerHTML = priceHtml;
     els.mDesc.innerText = product.description || 'No description available.';
 
-    // Star Rating Display
-    const ratingNum = parseFloat(product.rating || 5);
-    const starCount = Math.min(5, Math.max(0, ratingNum));
-    const fullStars = Math.floor(starCount);
-    const halfStar = starCount % 1 >= 0.5;
-    let starsHtml = '<span style="color:#f59e0b; font-size:1rem;">';
-    for (let i = 0; i < fullStars; i++) starsHtml += '⭐';
-    if (halfStar && fullStars < 5) starsHtml += '⭐';
-    starsHtml += `</span> <span style="font-size:0.8rem; color:#666;">Ratings ${product.rating || '5.0'} (${product.reviewCount || 0})</span>`;
-
-    if (parseInt(product.soldCount) > 0) {
-        starsHtml += ` <span style="margin: 0 5px; color: #ccc;">|</span> <span style="font-size:0.8rem; color:#666;">${formatSold(product.soldCount)} sold</span>`;
-    }
-
-    const existingRating = els.modal.querySelector('.m-rating-row');
-    if (existingRating) existingRating.remove();
-    const ratingDiv = document.createElement('div');
-    ratingDiv.className = 'm-rating-row';
-    ratingDiv.style.marginBottom = '0.5rem';
-    ratingDiv.innerHTML = starsHtml;
-    els.mTitle.parentNode.insertBefore(ratingDiv, els.mTitle.nextSibling);
+    updateModalRatingUI(product);
 
     // Brand Display
     const existingBrand = els.modal.querySelector('.m-brand-row');
@@ -1767,6 +1747,20 @@ async function handleReviewSubmit(e) {
             document.querySelectorAll('.star-rating-input .star').forEach(s => s.classList.add('active'));
             document.getElementById('review-rating-value').value = 5;
             loadProductFeedback(currentModalProduct.id);
+
+            // Fetch updated product data to sync rating/count
+            fetch(WEB_APP_URL + "?type=products")
+                .then(r => r.json())
+                .then(res => {
+                    if (res.status === 'success') {
+                        allProducts = res.data || [];
+                        const updated = allProducts.find(p => String(p.id) === String(currentModalProduct.id));
+                        if (updated) {
+                            currentModalProduct = updated;
+                            updateModalRatingUI(updated);
+                        }
+                    }
+                }).catch(err => console.warn("Background sync failed", err));
         } else {
             showToast("Error: " + data.message, "error");
         }
@@ -1802,6 +1796,31 @@ function scrollToReview(productId) {
     }
     closeModal();
     showToast("Please choose a product to review.", "info");
+}
+
+function updateModalRatingUI(product) {
+    const ratingNum = parseFloat(product.rating || 5);
+    const starCount = Math.min(5, Math.max(0, ratingNum));
+    const fullStars = Math.floor(starCount);
+    const halfStar = starCount % 1 >= 0.5;
+
+    let starsHtml = '<span style="color:#f59e0b; font-size:1rem;">';
+    for (let i = 0; i < fullStars; i++) starsHtml += '⭐';
+    if (halfStar && fullStars < 5) starsHtml += '⭐';
+    starsHtml += `</span> <span style="font-size:0.8rem; color:#666;">Ratings ${parseFloat(product.rating || 5).toFixed(1)} (${product.reviewCount || 0})</span>`;
+
+    if (parseInt(product.soldCount) > 0) {
+        starsHtml += ` <span style="margin: 0 5px; color: #ccc;">|</span> <span style="font-size:0.8rem; color:#666;">${formatSold(product.soldCount)} sold</span>`;
+    }
+
+    const existingRating = els.modal.querySelector('.m-rating-row');
+    if (existingRating) existingRating.remove();
+
+    const ratingDiv = document.createElement('div');
+    ratingDiv.className = 'm-rating-row';
+    ratingDiv.style.marginBottom = '0.5rem';
+    ratingDiv.innerHTML = starsHtml;
+    els.mTitle.parentNode.insertBefore(ratingDiv, els.mTitle.nextSibling);
 }
 
 init();
