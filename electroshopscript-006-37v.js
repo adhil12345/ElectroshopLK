@@ -1,6 +1,6 @@
 // --- Configuration ---
 if (typeof WEB_APP_URL === 'undefined') {
-    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzLfE9iiXtUe_qRi1ufh0Ng9LZdvilGlPuR4TXGqbwvKik0bvibdY5o6Qmcu_vDQTnvBg/exec';
+    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz_ozaR5ig7f0HzOwNm0WFBsR4_6KuO4BGB8Co3fzlBTVnlM0x8uh0C_uogxlQKGv7nnQ/exec';
 }
 if (typeof GOOGLE_CLIENT_ID === 'undefined') {
     window.GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com";
@@ -279,6 +279,48 @@ function bindEvents() {
     });
 
     if (els.checkoutForm) els.checkoutForm.addEventListener('submit', handleCheckout);
+
+    // Review Modal Star selection
+    const stars = document.querySelectorAll('.star-rating-input .star');
+    stars.forEach(s => {
+        s.addEventListener('click', (e) => {
+            const val = e.target.getAttribute('data-value');
+            document.getElementById('review-rating-value').value = val;
+            stars.forEach(star => {
+                if (star.getAttribute('data-value') <= val) star.classList.add('active');
+                else star.classList.remove('active');
+            });
+        });
+    });
+
+    // Review Image Preview
+    const reviewFileInput = document.getElementById('review-images-input');
+    const previewContainer = document.getElementById('review-image-previews');
+    if (reviewFileInput) {
+        reviewFileInput.addEventListener('change', (e) => {
+            previewContainer.innerHTML = '';
+            const files = Array.from(e.target.files);
+            files.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = (loadEvent) => {
+                    const div = document.createElement('div');
+                    div.className = 'upload-preview-item';
+                    div.innerHTML = `
+                        <img src="${loadEvent.target.result}">
+                        <button type="button" class="upload-preview-remove" data-index="${index}">&times;</button>
+                    `;
+                    previewContainer.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+    }
+
+    // Review Submit
+    const reviewForm = document.getElementById('product-review-form');
+    if (reviewForm) {
+        reviewForm.addEventListener('submit', handleReviewSubmit);
+    }
 }
 
 function initGoogleLogin() {
@@ -1050,6 +1092,13 @@ function renderProducts(list) {
         if (isOverseas) badgesHtml += '<span class="badge overseas">Overseas</span>';
         badgesHtml += '</div>';
 
+        // Star Rating on Card (Using product sheet's rating if live isn't loaded yet)
+        const ratingHtml = p.rating ? `
+          <div class="p-rating-badge">
+             <span>★</span> <span>${parseFloat(p.rating).toFixed(1)}</span>
+          </div>
+        ` : '';
+
         const card = document.createElement('div');
         card.className = 'product-card';
         card.innerHTML = `
@@ -1059,6 +1108,7 @@ function renderProducts(list) {
       </div>
       <div class="p-details">
         ${p.brand ? `<div class="p-brand" style="font-size:0.7rem; color:#888; text-transform:uppercase; margin-bottom:2px;">${p.brand}</div>` : ''}
+        ${ratingHtml}
         <h3 class="p-title">${p.name}</h3>
         ${parseInt(p.soldCount) > 0 ? `<div style="font-size: 0.75rem; color: #64748b; margin-bottom: 4px;">${formatSold(p.soldCount)} sold</div>` : ''}
         <div class="p-price-container">
@@ -1323,6 +1373,21 @@ function openModal(product, pushState = true) {
         }
     }
 
+    // --- Reviews Management ---
+    const reviewFormContainer = document.getElementById('review-form-container');
+    const loginReviewMsg = document.getElementById('login-to-review-msg');
+
+    if (currentUser) {
+        if (reviewFormContainer) reviewFormContainer.classList.remove('hidden');
+        if (loginReviewMsg) loginReviewMsg.classList.add('hidden');
+    } else {
+        if (reviewFormContainer) reviewFormContainer.classList.add('hidden');
+        if (loginReviewMsg) loginReviewMsg.classList.remove('hidden');
+    }
+
+    // Load Feedback
+    loadProductFeedback(product.id);
+
     els.modal.classList.remove('hidden');
     els.overlay.classList.remove('hidden');
 }
@@ -1562,6 +1627,124 @@ function closeInfoModal() { els.infoModal.classList.add('hidden'); els.overlay.c
 function closeSuccessModal() { els.successModal.classList.add('hidden'); els.overlay.classList.add('hidden'); }
 
 // Start
+async function loadProductFeedback(productId) {
+    const listDiv = document.getElementById('product-reviews-list');
+    const avgDiv = document.getElementById('modal-avg-rating');
+    listDiv.innerHTML = '<p style="text-align:center; padding:1rem; color:#999;">Loading reviews...</p>';
+    avgDiv.innerHTML = '';
+
+    try {
+        const res = await fetch(WEB_APP_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'get_product_feedback', productId })
+        });
+        const data = await res.json();
+
+        if (data.status === 'success') {
+            // Render Rating Summary
+            if (data.reviews.length > 0) {
+                avgDiv.innerHTML = `
+                  <span style="font-size:1.5rem; font-weight:700; color:var(--text-main);">${data.avgRating}</span>
+                  <div style="color:#f59e0b;">★ ★ ★ ★ ★</div>
+                  <span style="font-size:0.85rem; color:#888;">(${data.reviews.length} Reviews)</span>
+                `;
+
+                listDiv.innerHTML = data.reviews.map(r => `
+                  <div class="review-card">
+                    <div class="review-header">
+                      <span class="review-user">${r.userName}</span>
+                      <span class="review-date">${new Date(r.date).toLocaleDateString()}</span>
+                    </div>
+                    <div class="review-stars">
+                      ${'★'.repeat(Math.round(r.rating))}
+                      <span style="color:#ddd;">${'★'.repeat(5 - Math.round(r.rating))}</span>
+                    </div>
+                    <p class="review-comment">${r.comment}</p>
+                    ${r.images.length > 0 ? `
+                      <div class="review-images">
+                        ${r.images.map(img => `<img src="${img}" class="review-thumb" onclick="window.open('${img}', '_blank')">`).join('')}
+                      </div>
+                    ` : ''}
+                  </div>
+                `).join('');
+            } else {
+                avgDiv.innerHTML = '<span style="color:#999; font-size:0.85rem;">No reviews yet</span>';
+                listDiv.innerHTML = '<p style="text-align:center; padding:2rem; color:#999;">Be the first to review this product!</p>';
+            }
+        }
+    } catch (err) {
+        console.warn("Feedback Load Error", err);
+        listDiv.innerHTML = '<p style="text-align:center; color:red;">Could not load reviews.</p>';
+    }
+}
+
+async function handleReviewSubmit(e) {
+    e.preventDefault();
+    if (!currentUser) return;
+
+    const btn = document.getElementById('submit-review-btn');
+    const originalText = btn.innerText;
+    btn.disabled = true;
+    btn.innerText = 'Posting...';
+
+    const fd = new FormData(e.target);
+    const rating = document.getElementById('review-rating-value').value;
+    const comment = fd.get('comment');
+    const fileInput = document.getElementById('review-images-input');
+
+    // Convert images to base64
+    const imagesBase64 = [];
+    if (fileInput.files.length > 0) {
+        for (let i = 0; i < fileInput.files.length; i++) {
+            const base64 = await toBase64(fileInput.files[i]);
+            imagesBase64.push(base64);
+        }
+    }
+
+    const feedbackData = {
+        productId: currentModalProduct.id,
+        userId: currentUser.id,
+        userName: currentUser.name,
+        rating: rating,
+        comment: comment,
+        imagesBase64: imagesBase64
+    };
+
+    try {
+        const res = await fetch(WEB_APP_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'submit_feedback', feedbackData })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+            alert("Thank you for your review!");
+            e.target.reset();
+            document.getElementById('review-image-previews').innerHTML = '';
+            // Reset stars
+            document.querySelectorAll('.star-rating-input .star').forEach(s => s.classList.add('active'));
+            document.getElementById('review-rating-value').value = 5;
+            loadProductFeedback(currentModalProduct.id);
+        } else {
+            alert("Error: " + data.message);
+        }
+    } catch (err) {
+        alert("Server error. Please try again.");
+    } finally {
+        btn.disabled = false;
+        btn.innerText = originalText;
+    }
+}
+
+function toBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    });
+}
+
 init();
+
 
 
