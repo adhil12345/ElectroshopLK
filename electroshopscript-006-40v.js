@@ -1,9 +1,27 @@
 // --- Configuration ---
 if (typeof WEB_APP_URL === 'undefined') {
-    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyX4ui9slMjSOqHnRQ-7E4Vm2-8ICzQKlL7-KxZJ8ERL597vhWGxGW6lu4GKX9Z9jpOTg/exec';
+    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwgVBe2RvbI9BdmmudYvUsYGc0GN9hah2CUMwrEARLLc96H863w2vLWajaR0rRLvfGtgg/exec';
 }
 if (typeof GOOGLE_CLIENT_ID === 'undefined') {
     window.GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com";
+}
+
+// Toast system
+function showToast(msg, type = 'success') {
+    const container = document.getElementById('toast-container') || createToastContainer();
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<span>${msg}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => { toast.classList.add('hide'); setTimeout(() => toast.remove(), 500); }, 3000);
+}
+
+function createToastContainer() {
+    const div = document.createElement('div');
+    div.id = 'toast-container';
+    div.className = 'frontend-toast-container';
+    document.body.appendChild(div);
+    return div;
 }
 
 let DELIVERY_CHARGE = 350; // LKR default (will be updated by settings)
@@ -652,8 +670,20 @@ async function loadCustomerOrders() {
 
                 // Parse items: (ID) Qty x Name @ Price, ...
                 const itemsList = o.items ? o.items.split(',\n').map(item => {
-                    const cleanItem = item.replace(/^\(\d+\)\s*/, ''); // Remove the (ID) part
-                    return `<div style="padding: 4px 0; border-bottom: 1px dashed #edf2f7; font-size: 0.85rem;">• ${cleanItem}</div>`;
+                    const match = item.match(/^\((\d+)\)/);
+                    const pId = match ? match[1] : null;
+                    const cleanItem = item.replace(/^\(\d+\)\s*/, '');
+
+                    let reviewBtn = '';
+                    if (status.toLowerCase() === 'delivered' && pId) {
+                        reviewBtn = `<button onclick="scrollToReview('${pId}')" style="margin-left:auto; padding:2px 8px; font-size:0.7rem; background:#6366f1; color:white; border:none; border-radius:4px; cursor:pointer;">Review</button>`;
+                    }
+
+                    return `
+                      <div style="padding: 6px 0; border-bottom: 1px dashed #edf2f7; font-size: 0.85rem; display:flex; align-items:center; justify-content:space-between;">
+                        <span>• ${cleanItem}</span>
+                        ${reviewBtn}
+                      </div>`;
                 }).join('') : 'Item details not available';
 
                 // Tracking Link
@@ -720,7 +750,7 @@ async function loadCustomerOrders() {
                         ` : ''}
 
                         ${status.toLowerCase() === 'delivered' ? `
-                            <button onclick="scrollToReview()" style="padding: 0.5rem 0.8rem; font-size:0.8rem; font-weight:600; color:#6366f1; background:#eef2ff; border:1px solid #e0e7ff; border-radius:6px; cursor:pointer;">
+                            <button onclick="showToast('Click the Review button next to the item above to leave feedback!', 'info')" style="padding: 0.5rem 0.8rem; font-size:0.8rem; font-weight:600; color:#6366f1; background:#eef2ff; border:1px solid #e0e7ff; border-radius:6px; cursor:pointer;">
                                 ⭐ Review Items
                             </button>
                         ` : ''}
@@ -1098,10 +1128,11 @@ function renderProducts(list) {
         if (isOverseas) badgesHtml += '<span class="badge overseas">Overseas</span>';
         badgesHtml += '</div>';
 
-        // Star Rating on Card (Using product sheet's rating if live isn't loaded yet)
+        // Star Rating on Card
         const ratingHtml = p.rating ? `
           <div class="p-rating-badge">
              <span>★</span> <span>${parseFloat(p.rating).toFixed(1)}</span>
+             <span style="font-weight:400; opacity:0.8; margin-left:2px; font-size:0.7rem;">(${p.reviewCount || 0})</span>
           </div>
         ` : '';
 
@@ -1164,8 +1195,8 @@ function openModal(product, pushState = true) {
     const halfStar = starCount % 1 >= 0.5;
     let starsHtml = '<span style="color:#f59e0b; font-size:1rem;">';
     for (let i = 0; i < fullStars; i++) starsHtml += '⭐';
-    if (halfStar && fullStars < 5) starsHtml += '⭐'; // Using full star for simplicity or could use a half-star char if font supports
-    starsHtml += `</span> <span style="font-size:0.8rem; color:#666;">Ratings ${product.rating || '5.0'}</span>`;
+    if (halfStar && fullStars < 5) starsHtml += '⭐';
+    starsHtml += `</span> <span style="font-size:0.8rem; color:#666;">Ratings ${product.rating || '5.0'} (${product.reviewCount || 0})</span>`;
 
     if (parseInt(product.soldCount) > 0) {
         starsHtml += ` <span style="margin: 0 5px; color: #ccc;">|</span> <span style="font-size:0.8rem; color:#666;">${formatSold(product.soldCount)} sold</span>`;
@@ -1729,7 +1760,7 @@ async function handleReviewSubmit(e) {
         });
         const data = await res.json();
         if (data.status === 'success') {
-            alert("Thank you for your review!");
+            showToast("Thank you for your review!");
             e.target.reset();
             document.getElementById('review-image-previews').innerHTML = '';
             // Reset stars
@@ -1737,10 +1768,10 @@ async function handleReviewSubmit(e) {
             document.getElementById('review-rating-value').value = 5;
             loadProductFeedback(currentModalProduct.id);
         } else {
-            alert("Error: " + data.message);
+            showToast("Error: " + data.message, "error");
         }
     } catch (err) {
-        alert("Server error. Please try again.");
+        showToast("Server error. Please try again.", "error");
     } finally {
         btn.disabled = false;
         btn.innerText = originalText;
@@ -1756,9 +1787,21 @@ function toBase64(file) {
     });
 }
 
-function scrollToReview() {
+function scrollToReview(productId) {
+    if (productId) {
+        const prod = allProducts.find(p => String(p.id) === String(productId));
+        if (prod) {
+            openModal(prod);
+            // Wait for modal to render, then scroll to reviews
+            setTimeout(() => {
+                const reviewSec = document.querySelector('.reviews-section');
+                if (reviewSec) reviewSec.scrollIntoView({ behavior: 'smooth' });
+            }, 500);
+            return;
+        }
+    }
     closeModal();
-    alert("Please select a product from the shop to leave your review. You can only review products you have already purchased and received.");
+    showToast("Please choose a product to review.", "info");
 }
 
 init();
