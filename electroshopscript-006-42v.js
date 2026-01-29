@@ -1,6 +1,6 @@
 // --- Configuration ---
 if (typeof WEB_APP_URL === 'undefined') {
-    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx3bnskKsvUE6_attg0rBL_B-GTnKgrT9ZDklshjzLxKyavdFdM08g03axljXTh85-N_w/exec';
+    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxmzAgKlYaeP6O2Wh9TZoQVOyOV1r_7JnlZn34WfZaPPHXAkSpyB3SNB8LMkpiwEoBRpw/exec';
 }
 if (typeof GOOGLE_CLIENT_ID === 'undefined') {
     window.GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com";
@@ -1758,6 +1758,10 @@ async function handleReviewSubmit(e) {
                         if (updated) {
                             currentModalProduct = updated;
                             updateModalRatingUI(updated);
+                            // Also update the object in allProducts to ensure grid is correct
+                            const idx = allProducts.findIndex(p => String(p.id) === String(updated.id));
+                            if (idx !== -1) allProducts[idx] = updated;
+                            renderProducts(displayedProducts);
                         }
                     }
                 }).catch(err => console.warn("Background sync failed", err));
