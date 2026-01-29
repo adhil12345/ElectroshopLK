@@ -1083,6 +1083,7 @@ span#modal-price {
   color: var(--primary);
   font-weight: 700;
 }
+
 /* --- Customer Feedback --- */
 .reviews-section h3 {
   font-family: var(--font-display);
@@ -1090,11 +1091,12 @@ span#modal-price {
 }
 
 .star-rating-input .star.active {
-  color: #f59e0b; /* Golden star */
+  color: #f59e0b;
+  /* Golden star */
 }
 
 .star-rating-input .star:hover,
-.star-rating-input .star:hover ~ .star {
+.star-rating-input .star:hover~.star {
   /* This logic is handled better via JS, but basic hover: */
   transform: scale(1.1);
 }
@@ -1160,53 +1162,115 @@ span#modal-price {
 }
 
 .p-rating-badge {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    background: #fff9eb;
-    color: #f59e0b;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    width: fit-content;
-    margin-bottom: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #fff9eb;
+  color: #f59e0b;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  width: fit-content;
+  margin-bottom: 0.4rem;
 }
 
 /* Review Photo Upload Previews */
 .upload-preview-item {
-    position: relative;
-    width: 60px;
-    height: 60px;
+  position: relative;
+  width: 60px;
+  height: 60px;
 }
 
 .upload-preview-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 4px;
-    border: 1px solid #ddd;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #ddd;
 }
 
 .upload-preview-remove {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background: #f44336;
-    color: white;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    cursor: pointer;
-    border: none;
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #f44336;
+  color: white;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  cursor: pointer;
+  border: none;
 }
 
 @media (max-width: 600px) {
   .product-split {
     grid-template-columns: 1fr;
+  }
+}
+
+/* --- Frontend Toast --- */
+.frontend-toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast {
+  background: rgba(255, 255, 255, 0.95);
+  color: #1e293b;
+  padding: 12px 24px;
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #6366f1;
+  font-size: 0.9rem;
+  font-weight: 500;
+  pointer-events: auto;
+  animation: toastIn 0.3s ease-out forwards;
+  backdrop-filter: blur(8px);
+}
+
+.toast.error {
+  border-left-color: #ef4444;
+}
+
+.toast.info {
+  border-left-color: #3b82f6;
+}
+
+.toast.hide {
+  animation: toastOut 0.3s ease-in forwards;
+}
+
+@keyframes toastIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes toastOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateX(100%);
+    opacity: 0;
   }
 }
