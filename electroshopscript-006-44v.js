@@ -1,6 +1,6 @@
 // --- Configuration ---
 if (typeof WEB_APP_URL === 'undefined') {
-    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxmzAgKlYaeP6O2Wh9TZoQVOyOV1r_7JnlZn34WfZaPPHXAkSpyB3SNB8LMkpiwEoBRpw/exec';
+    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby6NJGYuHkX-dcbCibBJnZZPQ6OYT_s6rAXLNMjXlU59QVkssgmhV90zeRX5MKaqzwg1w/exec';
 }
 if (typeof GOOGLE_CLIENT_ID === 'undefined') {
     window.GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com";
@@ -1129,12 +1129,12 @@ function renderProducts(list) {
         badgesHtml += '</div>';
 
         // Star Rating on Card
-        const ratingHtml = p.rating ? `
+        const ratingHtml = `
           <div class="p-rating-badge">
-             <span>★</span> <span>${parseFloat(p.rating).toFixed(1)}</span>
+             <span>★</span> <span>${parseFloat(p.rating || 5).toFixed(1)}</span>
              <span style="font-weight:400; opacity:0.8; margin-left:2px; font-size:0.7rem;">(${p.reviewCount || 0})</span>
           </div>
-        ` : '';
+        `;
 
         const card = document.createElement('div');
         card.className = 'product-card';
