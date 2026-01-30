@@ -1,6 +1,6 @@
 // --- Configuration ---
 if (typeof WEB_APP_URL === 'undefined') {
-    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxSf2YKZuk5xaKeFK81IJqYTFQ6d1FfbHw144ui_Zh5Fgl_lWTl058tVN0lMtKdPVm0/exec';
+    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzrI0ym_1sxf1ss36TsAx8h563ppIWknOhKWlcEcIBp_DHBC4Y1xiIb2vMpGgYRtQRp/exec';
 }
 if (typeof GOOGLE_CLIENT_ID === 'undefined') {
     window.GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com";
@@ -1869,4 +1869,5 @@ function updateModalRatingUI(product) {
 }
 
 init();
+
 
