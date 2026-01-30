@@ -1,6 +1,6 @@
 // --- Configuration ---
 if (typeof WEB_APP_URL === 'undefined') {
-    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwIJsiwnOsl-o34fRkR4EG9-6CTnp4_H6Vnx402mt1FQQjTaB2d_RLdtG9dYaBm_f5D/exec';
+    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxSf2YKZuk5xaKeFK81IJqYTFQ6d1FfbHw144ui_Zh5Fgl_lWTl058tVN0lMtKdPVm0/exec';
 }
 if (typeof GOOGLE_CLIENT_ID === 'undefined') {
     window.GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com";
@@ -1168,7 +1168,7 @@ function renderProducts(list) {
             ${p.brand ? `<div class="p-brand" style="font-size:0.7rem; color:#888; text-transform:uppercase; margin-bottom:2px;">${p.brand}</div>` : ''}
             ${ratingHtml}
             <h3 class="p-title">${p.name}</h3>
-            ${parseInt(p.soldCount) > 0 ? `<div style="font-size: 0.75rem; color: #64748b; margin-bottom: 4px;">${formatSold(p.soldCount)} sold</div>` : ''}
+            <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 4px;">${formatSold(p.soldCount)} sold</div>
             <div class="p-price-container">
             ${p.hasOffer ? `<span class="price-old">LKR ${p.originalPrice}</span>` : ''}
             <span class="p-price">LKR ${p.price}</span>
