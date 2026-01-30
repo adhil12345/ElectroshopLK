@@ -1,6 +1,6 @@
 // --- Configuration ---
 if (typeof WEB_APP_URL === 'undefined') {
-    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxxv-iJg9w8TDmCQQIwhS4EUWFbgD-ohSPs_tRU61L-iD2Ux4yF8Nbh56g_XnEbetWP/exec';
+    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwAy3RHz32FejIHUbmYUSzTlLCIROT3miL3B6rgzhNywmjlaxhkVMkoxgdUI3RdvnLg/exec';
 }
 if (typeof GOOGLE_CLIENT_ID === 'undefined') {
     window.GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com";
@@ -960,12 +960,14 @@ async function loadProducts() {
                 const longDesc = p[9] || "";
                 const brand = p[12] || "";
                 const rating = p[13] || "5.0";
+                const soldCount = p[14] || 0;
+                const reviewCount = p[15] || 0;
 
                 return {
                     id: p[0], name: p[1], price: p[2], image: normalizeDriveUrl(img),
                     description: p[4], category: p[5], quantity: p[6], origin: p[7],
                     descriptionImage: descImg, longDescription: longDesc,
-                    colors: p[10] || "", costPrice: p[11], brand, rating, soldCount: p[14] || 0
+                    colors: p[10] || "", costPrice: p[11], brand, rating, soldCount, reviewCount
                 };
             }
 
@@ -998,6 +1000,7 @@ async function loadProducts() {
             const brand = findKey(['brand', 'brandname']) || '';
             const rating = findKey(['rating', 'starrating', 'stars']) || '5.0';
             const soldCount = findKey(['soldCount', 'sold', 'sales', 'sold_count']) || 0;
+            const reviewCount = findKey(['reviewCount', 'reviews', 'count']) || 0;
 
             let originalPrice = priceRaw;
             let offerPrice = priceRaw;
@@ -1031,7 +1034,8 @@ async function loadProducts() {
                 colors,
                 brand,
                 rating,
-                soldCount
+                soldCount,
+                reviewCount
             };
         }).map(p => {
             // Final check: if after all that it's still empty, use a placeholder
@@ -1828,10 +1832,5 @@ function updateModalRatingUI(product) {
 }
 
 init();
-
-
-
-
-
 
 
