@@ -1,6 +1,6 @@
 // --- Configuration ---
 if (typeof WEB_APP_URL === 'undefined') {
-    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwAy3RHz32FejIHUbmYUSzTlLCIROT3miL3B6rgzhNywmjlaxhkVMkoxgdUI3RdvnLg/exec';
+    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwIJsiwnOsl-o34fRkR4EG9-6CTnp4_H6Vnx402mt1FQQjTaB2d_RLdtG9dYaBm_f5D/exec';
 }
 if (typeof GOOGLE_CLIENT_ID === 'undefined') {
     window.GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com";
@@ -468,6 +468,9 @@ function openAccountModal() {
         if (updPhone) updPhone.value = currentUser.phone || '';
         if (updAddress) updAddress.value = currentUser.address || '';
 
+        const updDistrict = document.getElementById('upd-district');
+        if (updDistrict) updDistrict.value = currentUser.district || '';
+
         // Default to Orders tab
         window.switchAccountTab('orders');
         loadCustomerOrders();
@@ -484,7 +487,8 @@ async function handleProfileUpdate(e) {
     const updates = {
         name: document.getElementById('upd-name').value,
         phone: document.getElementById('upd-phone').value,
-        address: document.getElementById('upd-address').value
+        address: document.getElementById('upd-address').value,
+        district: document.getElementById('upd-district').value
     };
 
     try {
@@ -559,11 +563,13 @@ function checkUserSession() {
         const emailIn = els.checkoutForm.querySelector('[name="cust-email"]');
         const phoneIn = els.checkoutForm.querySelector('[name="cust-phone"]');
         const addrIn = els.checkoutForm.querySelector('[name="cust-address"]');
+        const distIn = els.checkoutForm.querySelector('[name="cust-district"]');
 
         if (nameIn) nameIn.value = currentUser.name;
         if (emailIn) emailIn.value = currentUser.email;
         if (phoneIn) phoneIn.value = currentUser.phone || '';
         if (addrIn) addrIn.value = currentUser.address || '';
+        if (distIn) distIn.value = currentUser.district || '';
     }
 }
 
@@ -674,6 +680,14 @@ async function loadCustomerOrders() {
                     const pId = match ? match[1] : null;
                     const cleanItem = item.replace(/^\(\d+\)\s*/, '');
 
+                    let pImg = '';
+                    if (pId) {
+                        const prod = allProducts.find(p => String(p.id) === String(pId));
+                        if (prod && prod.image) {
+                            pImg = `<img src="${prod.image}" style="width:40px; height:40px; object-fit:cover; border-radius:4px; margin-right:10px; cursor:pointer;" onclick="openModalAndCloseAccount('${pId}')">`;
+                        }
+                    }
+
                     let reviewBtn = '';
                     if (status.toLowerCase() === 'delivered' && pId) {
                         reviewBtn = `<button onclick="scrollToReview('${pId}')" style="margin-left:auto; padding:2px 8px; font-size:0.7rem; background:#6366f1; color:white; border:none; border-radius:4px; cursor:pointer;">Review</button>`;
@@ -681,7 +695,10 @@ async function loadCustomerOrders() {
 
                     return `
                       <div style="padding: 6px 0; border-bottom: 1px dashed #edf2f7; font-size: 0.85rem; display:flex; align-items:center; justify-content:space-between;">
-                        <span>• ${cleanItem}</span>
+                        <div style="display:flex; align-items:center;">
+                            ${pImg}
+                            <span ${pId ? `onclick="openModalAndCloseAccount('${pId}')" style="cursor:pointer;"` : ''}>• ${cleanItem}</span>
+                        </div>
                         ${reviewBtn}
                       </div>`;
                 }).join('') : 'Item details not available';
@@ -1429,6 +1446,25 @@ window.openModalById = function (id) {
     if (p) openModal(p);
 };
 
+window.openModalAndCloseAccount = function (id) {
+    els.accountModal.classList.add('hidden');
+    window.openModalById(id);
+};
+
+window.openImagePreview = function (url) {
+    const modal = document.getElementById('image-preview-modal');
+    const img = document.getElementById('preview-modal-img');
+    if (modal && img) {
+        img.src = url;
+        modal.style.display = 'flex';
+    }
+};
+
+window.closeImagePreview = function () {
+    const modal = document.getElementById('image-preview-modal');
+    if (modal) modal.style.display = 'none';
+};
+
 // Helper for Brand Search
 window.searchByBrand = function (brand) {
     els.searchInput.value = brand;
@@ -1683,7 +1719,7 @@ async function loadProductFeedback(productId) {
                     <p class="review-comment">${r.comment}</p>
                     ${r.images.length > 0 ? `
                       <div class="review-images">
-                        ${r.images.map(img => `<img src="${img}" class="review-thumb" onclick="window.open('${img}', '_blank')">`).join('')}
+                        ${r.images.map(img => `<img src="${img}" class="review-thumb" onclick="window.openImagePreview('${img}')">`).join('')}
                       </div>
                     ` : ''}
                     ${r.reply ? `
@@ -1832,5 +1868,4 @@ function updateModalRatingUI(product) {
 }
 
 init();
-
 
