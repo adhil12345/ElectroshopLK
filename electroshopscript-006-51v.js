@@ -324,9 +324,9 @@ function bindEvents() {
                     const div = document.createElement('div');
                     div.className = 'upload-preview-item';
                     div.innerHTML = `
-                        <img src="${loadEvent.target.result}">
-                        <button type="button" class="upload-preview-remove" data-index="${index}">&times;</button>
-                    `;
+                            <img src="${loadEvent.target.result}">
+                            <button type="button" class="upload-preview-remove" data-index="${index}">&times;</button>
+                        `;
                     previewContainer.appendChild(div);
                 };
                 reader.readAsDataURL(file);
@@ -694,93 +694,93 @@ async function loadCustomerOrders() {
                     }
 
                     return `
-                      <div style="padding: 6px 0; border-bottom: 1px dashed #edf2f7; font-size: 0.85rem; display:flex; align-items:center; justify-content:space-between;">
-                        <div style="display:flex; align-items:center;">
-                            ${pImg}
-                            <span ${pId ? `onclick="openModalAndCloseAccount('${pId}')" style="cursor:pointer;"` : ''}>• ${cleanItem}</span>
-                        </div>
-                        ${reviewBtn}
-                      </div>`;
+                        <div style="padding: 6px 0; border-bottom: 1px dashed #edf2f7; font-size: 0.85rem; display:flex; align-items:center; justify-content:space-between;">
+                            <div style="display:flex; align-items:center;">
+                                ${pImg}
+                                <span ${pId ? `onclick="openModalAndCloseAccount('${pId}')" style="cursor:pointer;"` : ''}>• ${cleanItem}</span>
+                            </div>
+                            ${reviewBtn}
+                        </div>`;
                 }).join('') : 'Item details not available';
 
                 // Tracking Link
                 const trackLink = `https://koombiyodelivery.lk/Track/track_id?id=${o.tracking || ''}&phone=${o.phone || ''}`;
 
                 return `
-              <div style="background:#fff; padding:1.2rem; border-radius:12px; border:1px solid #edf2f7; margin-bottom:1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                 <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:0.8rem;">
-                    <div>
-                        <div style="font-weight:700; color:var(--text-main); font-size:1rem;">#${o.orderId}</div>
-                        <div style="font-size:0.8rem; color:#718096; margin-top:2px;">
-                           ${o.date ? new Date(o.date).toLocaleDateString('en-GB') : 'Date N/A'}
+                <div style="background:#fff; padding:1.2rem; border-radius:12px; border:1px solid #edf2f7; margin-bottom:1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                    <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:0.8rem;">
+                        <div>
+                            <div style="font-weight:700; color:var(--text-main); font-size:1rem;">#${o.orderId}</div>
+                            <div style="font-size:0.8rem; color:#718096; margin-top:2px;">
+                            ${o.date ? new Date(o.date).toLocaleDateString('en-GB') : 'Date N/A'}
+                            </div>
                         </div>
-                    </div>
-                    <span style="font-size:0.7rem; font-weight:600; text-transform:uppercase; background:${getStatusColor(status)}; color:white; padding:4px 10px; border-radius:100px; letter-spacing:0.025em;">
-                        ${status}
-                    </span>
-                 </div>
-                 
-                 <div style="background:#f8fafc; padding:0.8rem; border-radius:8px; margin-bottom:1.5rem;">
-                    <div style="font-weight:600; font-size:0.75rem; text-transform:uppercase; color:#a0aec0; margin-bottom:0.5rem;">Logistics Tracking</div>
-                    <div style="font-size:0.8rem; display:flex; flex-direction:column; gap:6px;">
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <span style="font-size:1rem;">📦</span>
-                            <span style="color:#4a5568;">Shipped:</span>
-                            <span style="font-weight:600; color:#2d3748;">${o.shippedDate || 'Pending'}</span>
-                        </div>
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <span style="font-size:1rem;">🏠</span>
-                            <span style="color:#4a5568;">Delivered:</span>
-                            <span style="font-weight:600; color:#2d3748;">${o.deliveredDate || '-'}</span>
-                        </div>
-                    </div>
-                 </div>
-
-                 <div style="background:#f8fafc; padding:0.8rem; border-radius:8px; margin-bottom:1rem;">
-                    <div style="font-weight:600; font-size:0.75rem; text-transform:uppercase; color:#a0aec0; margin-bottom:0.5rem;">Ordered Items</div>
-                    ${itemsList}
-                 </div>
-
-                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <span style="font-size:0.8rem; color:#718096;">Total Paid</span>
-                        <div style="font-weight:700; color:var(--primary); font-size:1.1rem;">LKR ${parseFloat(o.total || 0).toLocaleString()}</div>
+                        <span style="font-size:0.7rem; font-weight:600; text-transform:uppercase; background:${getStatusColor(status)}; color:white; padding:4px 10px; border-radius:100px; letter-spacing:0.025em;">
+                            ${status}
+                        </span>
                     </div>
                     
-                    <div style="display:flex; gap:0.5rem;">
-                        ${canCancel ? `
-                            <button onclick="handleCancelOrder('${o.orderId}')" style="padding: 0.5rem 0.8rem; font-size:0.8rem; font-weight:600; color:#ef4444; background:#fef2f2; border:1px solid #fee2e2; border-radius:6px; cursor:pointer;">
-                                Cancel Order
-                            </button>
-                        ` : ''}
-
-                        ${isReadyForTrack ? `
-                            <a href="${trackLink}" target="_blank" style="text-decoration:none; padding: 0.5rem 0.8rem; font-size:0.8rem; font-weight:600; color:#3b82f6; background:#eff6ff; border:1px solid #dbeafe; border-radius:6px; display:inline-block;">
-                                🚚 Track Order
-                            </a>
-                        ` : ''}
-
-                        ${["shipped", "ready"].includes(status.toLowerCase().trim()) ? `
-                            <button onclick="handleConfirmDelivery('${o.orderId}')" style="padding: 0.5rem 0.8rem; font-size:0.8rem; font-weight:600; color:#10b981; background:#f0fdf4; border:1px solid #dcfce7; border-radius:6px; cursor:pointer;">
-                                ✅ Received
-                            </button>
-                        ` : ''}
-
-                        ${status.toLowerCase() === 'delivered' ? `
-                            <button onclick="showToast('Click the Review button next to the item above to leave feedback!', 'info')" style="padding: 0.5rem 0.8rem; font-size:0.8rem; font-weight:600; color:#6366f1; background:#eef2ff; border:1px solid #e0e7ff; border-radius:6px; cursor:pointer;">
-                                ⭐ Review Items
-                            </button>
-                        ` : ''}
-
-                        ${!canCancel && !isReadyForTrack && !["shipped", "ready", "delivered"].includes(status.toLowerCase().trim()) ? `
-                            <button style="padding: 0.5rem 0.8rem; font-size:0.8rem; font-weight:600; color:#718096; background:#f7fafc; border:1px solid #edf2f7; border-radius:6px; cursor:default;">
-                                Details Added
-                            </button>
-                        ` : ''}
+                    <div style="background:#f8fafc; padding:0.8rem; border-radius:8px; margin-bottom:1.5rem;">
+                        <div style="font-weight:600; font-size:0.75rem; text-transform:uppercase; color:#a0aec0; margin-bottom:0.5rem;">Logistics Tracking</div>
+                        <div style="font-size:0.8rem; display:flex; flex-direction:column; gap:6px;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="font-size:1rem;">📦</span>
+                                <span style="color:#4a5568;">Shipped:</span>
+                                <span style="font-weight:600; color:#2d3748;">${o.shippedDate || 'Pending'}</span>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="font-size:1rem;">🏠</span>
+                                <span style="color:#4a5568;">Delivered:</span>
+                                <span style="font-weight:600; color:#2d3748;">${o.deliveredDate || '-'}</span>
+                            </div>
+                        </div>
                     </div>
-                 </div>
-              </div>
-            `;
+
+                    <div style="background:#f8fafc; padding:0.8rem; border-radius:8px; margin-bottom:1rem;">
+                        <div style="font-weight:600; font-size:0.75rem; text-transform:uppercase; color:#a0aec0; margin-bottom:0.5rem;">Ordered Items</div>
+                        ${itemsList}
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <span style="font-size:0.8rem; color:#718096;">Total Paid</span>
+                            <div style="font-weight:700; color:var(--primary); font-size:1.1rem;">LKR ${parseFloat(o.total || 0).toLocaleString()}</div>
+                        </div>
+                        
+                        <div style="display:flex; gap:0.5rem;">
+                            ${canCancel ? `
+                                <button onclick="handleCancelOrder('${o.orderId}')" style="padding: 0.5rem 0.8rem; font-size:0.8rem; font-weight:600; color:#ef4444; background:#fef2f2; border:1px solid #fee2e2; border-radius:6px; cursor:pointer;">
+                                    Cancel Order
+                                </button>
+                            ` : ''}
+
+                            ${isReadyForTrack ? `
+                                <a href="${trackLink}" target="_blank" style="text-decoration:none; padding: 0.5rem 0.8rem; font-size:0.8rem; font-weight:600; color:#3b82f6; background:#eff6ff; border:1px solid #dbeafe; border-radius:6px; display:inline-block;">
+                                    🚚 Track Order
+                                </a>
+                            ` : ''}
+
+                            ${["shipped", "ready"].includes(status.toLowerCase().trim()) ? `
+                                <button onclick="handleConfirmDelivery('${o.orderId}')" style="padding: 0.5rem 0.8rem; font-size:0.8rem; font-weight:600; color:#10b981; background:#f0fdf4; border:1px solid #dcfce7; border-radius:6px; cursor:pointer;">
+                                    ✅ Received
+                                </button>
+                            ` : ''}
+
+                            ${status.toLowerCase() === 'delivered' ? `
+                                <button onclick="showToast('Click the Review button next to the item above to leave feedback!', 'info')" style="padding: 0.5rem 0.8rem; font-size:0.8rem; font-weight:600; color:#6366f1; background:#eef2ff; border:1px solid #e0e7ff; border-radius:6px; cursor:pointer;">
+                                    ⭐ Review Items
+                                </button>
+                            ` : ''}
+
+                            ${!canCancel && !isReadyForTrack && !["shipped", "ready", "delivered"].includes(status.toLowerCase().trim()) ? `
+                                <button style="padding: 0.5rem 0.8rem; font-size:0.8rem; font-weight:600; color:#718096; background:#f7fafc; border:1px solid #edf2f7; border-radius:6px; cursor:default;">
+                                    Details Added
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+                `;
             }).join('');
         } else {
             listDiv.innerHTML = '<div style="text-align:center; padding:2rem; color:#888;">No orders found.</div>';
@@ -1151,31 +1151,31 @@ function renderProducts(list) {
 
         // Star Rating on Card
         const ratingHtml = `
-          <div class="p-rating-badge">
-             <span>★</span> <span>${parseFloat(p.rating || 5).toFixed(1)}</span>
-             <span style="font-weight:400; opacity:0.8; margin-left:2px; font-size:0.7rem;">(${p.reviewCount || 0})</span>
-          </div>
-        `;
+            <div class="p-rating-badge">
+                <span>★</span> <span>${parseFloat(p.rating || 5).toFixed(1)}</span>
+                <span style="font-weight:400; opacity:0.8; margin-left:2px; font-size:0.7rem;">(${p.reviewCount || 0})</span>
+            </div>
+            `;
 
         const card = document.createElement('div');
         card.className = 'product-card';
         card.innerHTML = `
-      ${badgesHtml}
-      <div style="overflow:hidden;">
-        <img class="p-image" src="${p.image}" alt="${p.name}" loading="lazy">
-      </div>
-      <div class="p-details">
-        ${p.brand ? `<div class="p-brand" style="font-size:0.7rem; color:#888; text-transform:uppercase; margin-bottom:2px;">${p.brand}</div>` : ''}
-        ${ratingHtml}
-        <h3 class="p-title">${p.name}</h3>
-        ${parseInt(p.soldCount) > 0 ? `<div style="font-size: 0.75rem; color: #64748b; margin-bottom: 4px;">${formatSold(p.soldCount)} sold</div>` : ''}
-        <div class="p-price-container">
-          ${p.hasOffer ? `<span class="price-old">LKR ${p.originalPrice}</span>` : ''}
-          <span class="p-price">LKR ${p.price}</span>
+        ${badgesHtml}
+        <div style="overflow:hidden;">
+            <img class="p-image" src="${p.image}" alt="${p.name}" loading="lazy">
         </div>
-        <button class="p-action" ${isOOS ? 'disabled' : ''}>${isOOS ? 'Out of Stock' : 'View Details'}</button>
-      </div>
-    `;
+        <div class="p-details">
+            ${p.brand ? `<div class="p-brand" style="font-size:0.7rem; color:#888; text-transform:uppercase; margin-bottom:2px;">${p.brand}</div>` : ''}
+            ${ratingHtml}
+            <h3 class="p-title">${p.name}</h3>
+            ${parseInt(p.soldCount) > 0 ? `<div style="font-size: 0.75rem; color: #64748b; margin-bottom: 4px;">${formatSold(p.soldCount)} sold</div>` : ''}
+            <div class="p-price-container">
+            ${p.hasOffer ? `<span class="price-old">LKR ${p.originalPrice}</span>` : ''}
+            <span class="p-price">LKR ${p.price}</span>
+            </div>
+            <button class="p-action" ${isOOS ? 'disabled' : ''}>${isOOS ? 'Out of Stock' : 'View Details'}</button>
+        </div>
+        `;
         card.addEventListener('click', () => openModal(p));
         els.grid.appendChild(card);
     });
@@ -1398,14 +1398,14 @@ function openModal(product, pushState = true) {
         if (related.length > 0) {
             relatedSection.style.display = 'block';
             relatedGrid.innerHTML = related.map(rp => `
-        <div class="related-card" onclick="event.stopPropagation(); window.openModalById('${rp.id}')">
-          <img src="${rp.image}" alt="${rp.name}">
-          <div class="r-info">
-            <div class="r-title">${rp.name}</div>
-            <div class="r-price">LKR ${rp.price}</div>
-          </div>
-        </div>
-      `).join('');
+            <div class="related-card" onclick="event.stopPropagation(); window.openModalById('${rp.id}')">
+            <img src="${rp.image}" alt="${rp.name}">
+            <div class="r-info">
+                <div class="r-title">${rp.name}</div>
+                <div class="r-price">LKR ${rp.price}</div>
+            </div>
+            </div>
+        `).join('');
         } else {
             relatedSection.style.display = 'none';
         }
@@ -1558,6 +1558,7 @@ function toggleCart() {
             if (currentUser.email) form.elements['cust-email'].value = currentUser.email;
             if (currentUser.phone) form.elements['cust-phone'].value = currentUser.phone;
             if (currentUser.address) form.elements['cust-address'].value = currentUser.address;
+            if (currentUser.district) form.elements['cust-district'].value = currentUser.district;
         }
     }
 
@@ -1652,27 +1653,27 @@ async function handleCheckout(e) {
 // --- Info Pages ---
 const infoContent = {
     about: `ElectroShop is your trusted partner for premium electronics. We are committed to providing high-quality products, transparent pricing, and excellent customer service.
-  <p style="margin-top:1rem;">If you have any questions regarding our products, orders, or services, please feel free to contact us. Our team is always ready to assist you.</p>`,
+    <p style="margin-top:1rem;">If you have any questions regarding our products, orders, or services, please feel free to contact us. Our team is always ready to assist you.</p>`,
     contact: 'Contact Us Loading...',
     privacy: 'Privacy Policy Loading...',
     shipping: 'Shipping Policy Loading...',
     returnpolicy: `<h3>Return Policy</h3>
-<p>At ElectroShop LK, we want you to be completely satisfied with your purchase. If you change your mind, we offer a 14-day return window tailored for your convenience.</p>
-<h4>14-Day Change of Mind</h4>
-<p>You have 14 days from the date of receipt to return an item if you simply change your mind. To be eligible for a return, your item must be:</p>
-<ul>
-  <li>Unused and in the same condition that you received it.</li>
-  <li>In the original packaging with all seals intact.</li>
-  <li>Accompanied by the receipt or proof of purchase.</li>
-</ul>
-<h4>Postal Returns Only</h4>
-<p>Please note that all returns must be made via post. We do not accept in-person returns at our warehouse or office locations. Please contact our support team to receive the return mailing address and instructions.</p>
-<h4>Conditions</h4>
-<ul>
-  <li>Return shipping costs are the responsibility of the customer unless the item is defective or incorrect.</li>
-  <li>Items that are damaged, used, or missing parts for reasons not due to our error may not be accepted or may incur a restocking fee.</li>
-  <li>Refunds will be processed to the original method of payment within 7-10 business days after we receive and inspect your return.</li>
-</ul>`
+    <p>At ElectroShop LK, we want you to be completely satisfied with your purchase. If you change your mind, we offer a 14-day return window tailored for your convenience.</p>
+    <h4>14-Day Change of Mind</h4>
+    <p>You have 14 days from the date of receipt to return an item if you simply change your mind. To be eligible for a return, your item must be:</p>
+    <ul>
+    <li>Unused and in the same condition that you received it.</li>
+    <li>In the original packaging with all seals intact.</li>
+    <li>Accompanied by the receipt or proof of purchase.</li>
+    </ul>
+    <h4>Postal Returns Only</h4>
+    <p>Please note that all returns must be made via post. We do not accept in-person returns at our warehouse or office locations. Please contact our support team to receive the return mailing address and instructions.</p>
+    <h4>Conditions</h4>
+    <ul>
+    <li>Return shipping costs are the responsibility of the customer unless the item is defective or incorrect.</li>
+    <li>Items that are damaged, used, or missing parts for reasons not due to our error may not be accepted or may incur a restocking fee.</li>
+    <li>Refunds will be processed to the original method of payment within 7-10 business days after we receive and inspect your return.</li>
+    </ul>`
 };
 function openInfoPage(page) {
     els.infoTitle.innerText = page.charAt(0).toUpperCase() + page.slice(1);
@@ -1701,35 +1702,35 @@ async function loadProductFeedback(productId) {
             // Render Rating Summary
             if (data.reviews.length > 0) {
                 avgDiv.innerHTML = `
-                  <span style="font-size:1.5rem; font-weight:700; color:var(--text-main);">${data.avgRating}</span>
-                  <div style="color:#f59e0b;">★ ★ ★ ★ ★</div>
-                  <span style="font-size:0.85rem; color:#888;">(${data.reviews.length} Reviews)</span>
-                `;
+                    <span style="font-size:1.5rem; font-weight:700; color:var(--text-main);">${data.avgRating}</span>
+                    <div style="color:#f59e0b;">★ ★ ★ ★ ★</div>
+                    <span style="font-size:0.85rem; color:#888;">(${data.reviews.length} Reviews)</span>
+                    `;
 
                 listDiv.innerHTML = data.reviews.map(r => `
-                  <div class="review-card">
-                    <div class="review-header">
-                      <span class="review-user">${r.userName}</span>
-                      <span class="review-date">${new Date(r.date).toLocaleDateString()}</span>
+                    <div class="review-card">
+                        <div class="review-header">
+                        <span class="review-user">${r.userName}</span>
+                        <span class="review-date">${new Date(r.date).toLocaleDateString()}</span>
+                        </div>
+                        <div class="review-stars">
+                        ${'★'.repeat(Math.round(r.rating))}
+                        <span style="color:#ddd;">${'★'.repeat(5 - Math.round(r.rating))}</span>
+                        </div>
+                        <p class="review-comment">${r.comment}</p>
+                        ${r.images.length > 0 ? `
+                        <div class="review-images">
+                            ${r.images.map(img => `<img src="${img}" class="review-thumb" onclick="window.openImagePreview('${img}')">`).join('')}
+                        </div>
+                        ` : ''}
+                        ${r.reply ? `
+                        <div class="staff-reply" style="background:#f8fafc; border-left:3px solid var(--primary); padding:0.8rem; margin-top:0.8rem; border-radius:4px; font-size:0.85rem;">
+                            <div style="font-weight:700; color:var(--primary); margin-bottom:4px;">Seller Reply:</div>
+                            ${r.reply}
+                        </div>
+                        ` : ''}
                     </div>
-                    <div class="review-stars">
-                      ${'★'.repeat(Math.round(r.rating))}
-                      <span style="color:#ddd;">${'★'.repeat(5 - Math.round(r.rating))}</span>
-                    </div>
-                    <p class="review-comment">${r.comment}</p>
-                    ${r.images.length > 0 ? `
-                      <div class="review-images">
-                        ${r.images.map(img => `<img src="${img}" class="review-thumb" onclick="window.openImagePreview('${img}')">`).join('')}
-                      </div>
-                    ` : ''}
-                    ${r.reply ? `
-                      <div class="staff-reply" style="background:#f8fafc; border-left:3px solid var(--primary); padding:0.8rem; margin-top:0.8rem; border-radius:4px; font-size:0.85rem;">
-                        <div style="font-weight:700; color:var(--primary); margin-bottom:4px;">Seller Reply:</div>
-                        ${r.reply}
-                      </div>
-                    ` : ''}
-                  </div>
-                `).join('');
+                    `).join('');
             } else {
                 avgDiv.innerHTML = '<span style="color:#999; font-size:0.85rem;">No reviews yet</span>';
                 listDiv.innerHTML = '<p style="text-align:center; padding:2rem; color:#999;">Be the first to review this product!</p>';
