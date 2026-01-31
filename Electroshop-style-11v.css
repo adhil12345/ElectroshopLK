@@ -374,7 +374,6 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
   width: 90%;
-  max-width: 900px;
   max-height: 90vh;
   background: var(--bg-card);
   z-index: 200;
@@ -1277,6 +1276,7 @@ span#modal-price {
     opacity: 0;
   }
 }
+
 
 
 
