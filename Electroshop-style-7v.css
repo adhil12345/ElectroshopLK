@@ -36,6 +36,12 @@ body {
   -webkit-text-fill-color: transparent;
 }
 
+div#product-modal
+Specificity: (1,0,1)
+ {
+    padding: 3%;
+}
+
 .hidden {
   display: none !important;
 }
@@ -1274,3 +1280,4 @@ span#modal-price {
     opacity: 0;
   }
 }
+
