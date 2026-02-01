@@ -40,6 +40,8 @@ body {
   display: none !important;
 }
 
+.modal-content {     padding: 16px; }
+
 .btn-primary,
 .btn-secondary {
   border: none;
@@ -1374,4 +1376,5 @@ span#modal-price {
     overflow-y: visible;
   }
 }
+
 
