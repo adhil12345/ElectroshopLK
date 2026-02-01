@@ -475,6 +475,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
+  padding: 0px 10px;
 }
 
 .product-info h2 {
@@ -1373,3 +1374,4 @@ span#modal-price {
     overflow-y: visible;
   }
 }
+
