@@ -1280,7 +1280,7 @@ span#modal-price {
 
 /* --- Account Modal Responsive Styles --- */
 .account-modal .modal-content {
-  max-width: 800px;
+
   height: 80vh;
   display: flex;
   flex-direction: column;
@@ -1376,5 +1376,6 @@ span#modal-price {
     overflow-y: visible;
   }
 }
+
 
 
