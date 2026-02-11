@@ -1339,26 +1339,22 @@ function openModal(product, pushState = true) {
     }
 
     if (remaining <= 0) {
-        els.addToCartBtn.classList.add('hidden');
-        els.buyNowBtn.classList.add('hidden');
-        els.mStockMsg.classList.remove('hidden');
-        if (product.quantity > 0) {
-            els.mStockMsg.innerText = "All available stock is already in your cart!";
-        } else {
-            els.mStockMsg.innerText = "This product is currently out of stock.";
+        if (els.addToCartBtn) els.addToCartBtn.disabled = true;
+        if (els.buyNowBtn) els.buyNowBtn.disabled = true;
+        if (els.mStockMsg) {
+            els.mStockMsg.classList.remove('hidden');
+            if (product.quantity > 0) {
+                els.mStockMsg.innerText = "All available stock is already in your cart!";
+            } else {
+                els.mStockMsg.innerText = "This product is currently out of stock.";
+            }
         }
-        els.qtyInput.disabled = true;
-        // Also hide the quantity controls
-        const qtySection = els.qtyInput.closest('.controls');
-        if (qtySection) qtySection.classList.add('hidden');
+        if (els.qtyInput) els.qtyInput.disabled = true;
     } else {
-        els.addToCartBtn.classList.remove('hidden');
-        els.buyNowBtn.classList.remove('hidden');
-        els.mStockMsg.classList.add('hidden');
-        els.qtyInput.disabled = false;
-        // Show the quantity controls
-        const qtySection = els.qtyInput.closest('.controls');
-        if (qtySection) qtySection.classList.remove('hidden');
+        if (els.addToCartBtn) els.addToCartBtn.disabled = false;
+        if (els.buyNowBtn) els.buyNowBtn.disabled = false;
+        if (els.mStockMsg) els.mStockMsg.classList.add('hidden');
+        if (els.qtyInput) els.qtyInput.disabled = false;
     }
 
     // --- Color Selection Logic ---
