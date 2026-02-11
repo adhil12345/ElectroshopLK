@@ -1339,8 +1339,8 @@ function openModal(product, pushState = true) {
     }
 
     if (remaining <= 0) {
-        els.addToCartBtn.disabled = true;
-        els.buyNowBtn.disabled = true;
+        els.addToCartBtn.classList.add('hidden');
+        els.buyNowBtn.classList.add('hidden');
         els.mStockMsg.classList.remove('hidden');
         if (product.quantity > 0) {
             els.mStockMsg.innerText = "All available stock is already in your cart!";
@@ -1348,11 +1348,17 @@ function openModal(product, pushState = true) {
             els.mStockMsg.innerText = "This product is currently out of stock.";
         }
         els.qtyInput.disabled = true;
+        // Also hide the quantity controls
+        const qtySection = els.qtyInput.closest('.controls');
+        if (qtySection) qtySection.classList.add('hidden');
     } else {
-        els.addToCartBtn.disabled = false;
-        els.buyNowBtn.disabled = false;
+        els.addToCartBtn.classList.remove('hidden');
+        els.buyNowBtn.classList.remove('hidden');
         els.mStockMsg.classList.add('hidden');
         els.qtyInput.disabled = false;
+        // Show the quantity controls
+        const qtySection = els.qtyInput.closest('.controls');
+        if (qtySection) qtySection.classList.remove('hidden');
     }
 
     // --- Color Selection Logic ---
