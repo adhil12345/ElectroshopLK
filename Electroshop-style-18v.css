@@ -66,11 +66,24 @@ body {
 
 .btn-primary:disabled,
 .btn-secondary:disabled,
-.p-action:disabled {
-  background: #ccc !important;
-  color: #888 !important;
+.p-action:disabled,
+.color-btn:disabled {
+  background: #f1f1f1 !important;
+  color: #bbb !important;
   cursor: not-allowed !important;
   transform: none !important;
+  border-color: #eee !important;
+  opacity: 0.6;
+}
+
+.color-btn:disabled::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 5%;
+  width: 90%;
+  border-top: 1px solid #bbb;
+  transform: rotate(-15deg);
 }
 
 .large {
