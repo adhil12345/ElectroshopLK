@@ -1450,8 +1450,12 @@ function openModal(product, pushState = true) {
             };
         }).filter(c => c.name);
 
+        let firstAvailableIdx = -1;
+
         colorList.forEach((c, idx) => {
             const btn = document.createElement('button');
+            const remaining = getRemainingStock(product, c.name);
+
             btn.className = 'color-btn';
             btn.innerText = c.name;
             btn.style.border = '1px solid #ddd';
@@ -1459,12 +1463,22 @@ function openModal(product, pushState = true) {
             btn.style.borderRadius = '20px';
             btn.style.cursor = 'pointer';
             btn.style.background = 'white';
+            btn.style.position = 'relative'; // For the strike-through
+
+            if (remaining <= 0) {
+                btn.disabled = true;
+                btn.title = "Out of stock";
+            } else if (firstAvailableIdx === -1) {
+                firstAvailableIdx = idx;
+            }
 
             btn.onclick = () => {
                 optionsDiv.querySelectorAll('.color-btn').forEach(b => {
-                    b.style.background = 'white';
-                    b.style.color = 'black';
-                    b.style.borderColor = '#ddd';
+                    if (!b.disabled) {
+                        b.style.background = 'white';
+                        b.style.color = 'black';
+                        b.style.borderColor = '#ddd';
+                    }
                 });
                 btn.style.background = '#6366f1';
                 btn.style.color = 'white';
@@ -1482,15 +1496,19 @@ function openModal(product, pushState = true) {
                 currentModalProduct.selectedColor = c.name;
 
                 // Update Stock Display for this color
-                const remaining = getRemainingStock(product, c.name);
                 updateModalStockUI(remaining, product.quantity);
             };
 
             optionsDiv.appendChild(btn);
-
-            // Auto-select first color variant
-            if (idx === 0) btn.click();
         });
+
+        // Auto-select first available color variant, or first one if none available
+        const allColorBtns = optionsDiv.querySelectorAll('.color-btn');
+        if (firstAvailableIdx !== -1) {
+            allColorBtns[firstAvailableIdx].click();
+        } else if (allColorBtns.length > 0) {
+            allColorBtns[0].click();
+        }
 
         // Insert after price block
         const priceBlock = els.mPrice.parentElement; // .price-block
