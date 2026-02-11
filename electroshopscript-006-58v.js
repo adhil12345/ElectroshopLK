@@ -238,12 +238,13 @@ function bindEvents() {
     if (els.btnPlus) {
         els.btnPlus.addEventListener('click', () => {
             if (currentModalProduct) {
-                const remaining = getRemainingStock(currentModalProduct);
+                const color = currentModalProduct.selectedColor || null;
+                const remaining = getRemainingStock(currentModalProduct, color);
                 if (currentQty < remaining) {
                     currentQty++;
                     if (els.qtyInput) els.qtyInput.value = currentQty;
                 } else {
-                    showToast(`Only ${remaining} units available.`, "info");
+                    showToast(`Only ${remaining} units available for this selection.`, "info");
                 }
             }
         });
@@ -259,11 +260,12 @@ function bindEvents() {
     if (els.qtyInput) {
         els.qtyInput.addEventListener('input', (e) => {
             let val = parseInt(e.target.value);
-            const remaining = getRemainingStock(currentModalProduct);
+            const color = currentModalProduct.selectedColor || null;
+            const remaining = getRemainingStock(currentModalProduct, color);
             if (isNaN(val) || val < 1) val = 1;
             if (val > remaining) {
                 val = remaining;
-                showToast(`Only ${remaining} units available.`, "info");
+                showToast(`Only ${remaining} units available for this selection.`, "info");
             }
             currentQty = val;
             e.target.value = val;
@@ -1324,7 +1326,7 @@ function openModal(product, pushState = true) {
         }
     }
 
-    const remaining = getRemainingStock(product);
+    const remaining = getRemainingStock(product, product.selectedColor || null);
     currentQty = remaining > 0 ? 1 : 0;
     els.qtyInput.value = currentQty;
     els.qtyInput.max = remaining;
@@ -1485,6 +1487,9 @@ function openModal(product, pushState = true) {
             };
 
             optionsDiv.appendChild(btn);
+
+            // Auto-select first color variant
+            if (idx === 0) btn.click();
         });
 
         // Insert after price block
