@@ -1,6 +1,6 @@
 // --- Configuration ---
 if (typeof WEB_APP_URL === 'undefined') {
-    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzrI0ym_1sxf1ss36TsAx8h563ppIWknOhKWlcEcIBp_DHBC4Y1xiIb2vMpGgYRtQRp/exec';
+    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwAy3RHz32FejIHUbmYUSzTlLCIROT3miL3B6rgzhNywmjlaxhkVMkoxgdUI3RdvnLg/exec';
 }
 if (typeof GOOGLE_CLIENT_ID === 'undefined') {
     window.GOOGLE_CLIENT_ID = "1039399318560-39i9ok10e3lo804so441d5bg0dm8m9oq.apps.googleusercontent.com";
@@ -237,8 +237,14 @@ function bindEvents() {
 
     if (els.btnPlus) {
         els.btnPlus.addEventListener('click', () => {
-            if (currentModalProduct && currentQty < (currentModalProduct.quantity || 99)) {
-                currentQty++; if (els.qtyInput) els.qtyInput.value = currentQty;
+            if (currentModalProduct) {
+                const remaining = getRemainingStock(currentModalProduct);
+                if (currentQty < remaining) {
+                    currentQty++;
+                    if (els.qtyInput) els.qtyInput.value = currentQty;
+                } else {
+                    showToast(`Only ${remaining} units available.`, "info");
+                }
             }
         });
     }
@@ -247,6 +253,20 @@ function bindEvents() {
             if (currentQty > 1) {
                 currentQty--; if (els.qtyInput) els.qtyInput.value = currentQty;
             }
+        });
+    }
+
+    if (els.qtyInput) {
+        els.qtyInput.addEventListener('input', (e) => {
+            let val = parseInt(e.target.value);
+            const remaining = getRemainingStock(currentModalProduct);
+            if (isNaN(val) || val < 1) val = 1;
+            if (val > remaining) {
+                val = remaining;
+                showToast(`Only ${remaining} units available.`, "info");
+            }
+            currentQty = val;
+            e.target.value = val;
         });
     }
 
@@ -1181,6 +1201,15 @@ function renderProducts(list) {
     });
 }
 
+function getRemainingStock(product) {
+    if (!product) return 0;
+    // Sum qty of all variants of this product in cart
+    const inCart = cart
+        .filter(item => String(item.id) === String(product.id))
+        .reduce((sum, item) => sum + item.qty, 0);
+    return Math.max(0, (parseInt(product.quantity) || 0) - inCart);
+}
+
 function openModal(product, pushState = true) {
     currentModalProduct = product;
     currentQty = 1;
@@ -1271,7 +1300,10 @@ function openModal(product, pushState = true) {
         }
     }
 
-    els.qtyInput.value = 1;
+    const remaining = getRemainingStock(product);
+    currentQty = remaining > 0 ? 1 : 0;
+    els.qtyInput.value = currentQty;
+    els.qtyInput.max = remaining;
 
     // Gallery Thumbnails
     els.mTags.innerHTML = '';
@@ -1306,10 +1338,15 @@ function openModal(product, pushState = true) {
         els.mShippingText.innerHTML = `Local Stock: <strong>3-7 Working Days</strong> island-wide.`;
     }
 
-    if (isOOS) {
+    if (remaining <= 0) {
         els.addToCartBtn.disabled = true;
         els.buyNowBtn.disabled = true;
         els.mStockMsg.classList.remove('hidden');
+        if (product.quantity > 0) {
+            els.mStockMsg.innerText = "All available stock is already in your cart!";
+        } else {
+            els.mStockMsg.innerText = "This product is currently out of stock.";
+        }
         els.qtyInput.disabled = true;
     } else {
         els.addToCartBtn.disabled = false;
@@ -1490,8 +1527,15 @@ function formatSold(count) {
 
 // ... Cart Logic (Standard) ...
 function addToCart(product, qty) {
-    if (product.quantity <= 0) return;
-    if (product.quantity <= 0) return;
+    const remaining = getRemainingStock(product);
+    if (remaining <= 0) {
+        showToast("Maximum available stock reached.", "error");
+        return;
+    }
+    if (qty > remaining) {
+        showToast(`Only ${remaining} more available items can be added.`, "error");
+        return;
+    }
 
     // Create unique ID for variants
     let cartId = product.id;
@@ -1869,5 +1913,4 @@ function updateModalRatingUI(product) {
 }
 
 init();
-
 
