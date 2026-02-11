@@ -40,8 +40,6 @@ body {
   display: none !important;
 }
 
-.modal-content {     padding: 16px; }
-
 .btn-primary,
 .btn-secondary {
   border: none;
@@ -66,9 +64,13 @@ body {
   color: white;
 }
 
-.btn-primary:disabled {
-  background: #ccc;
-  cursor: not-allowed;
+.btn-primary:disabled,
+.btn-secondary:disabled,
+.p-action:disabled {
+  background: #ccc !important;
+  color: #888 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
 }
 
 .large {
@@ -477,7 +479,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
-  padding: 0px 10px;
 }
 
 .product-info h2 {
@@ -1280,7 +1281,7 @@ span#modal-price {
 
 /* --- Account Modal Responsive Styles --- */
 .account-modal .modal-content {
-
+  max-width: 800px;
   height: 80vh;
   display: flex;
   flex-direction: column;
@@ -1376,6 +1377,3 @@ span#modal-price {
     overflow-y: visible;
   }
 }
-
-
-
