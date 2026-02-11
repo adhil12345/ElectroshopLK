@@ -1201,13 +1201,37 @@ function renderProducts(list) {
     });
 }
 
-function getRemainingStock(product) {
+function getRemainingStock(product, colorName = null) {
     if (!product) return 0;
-    // Sum qty of all variants of this product in cart
+
+    let baseQty = parseInt(product.quantity) || 0;
+    let matchId = String(product.id);
+
+    // If a specific color is selected and it has its own quantity, use that.
+    if (colorName && product.colors) {
+        const colorList = product.colors.split(',').map(c => {
+            const parts = c.split(':');
+            return {
+                name: parts[0].trim(),
+                price: parts[1] ? parseFloat(parts[1].trim()) || null : null,
+                quantity: parts[2] ? parseInt(parts[2].trim()) : null
+            };
+        });
+        const selectedVar = colorList.find(v => v.name === colorName);
+        if (selectedVar && selectedVar.quantity !== null) {
+            baseQty = selectedVar.quantity;
+            matchId = `${product.id}-${colorName}`;
+        }
+    } else {
+        // If no specifically-tracked color is selected, we still sum up all variant qtys in cart for this base product
+        // and subtract from baseQty.
+    }
+
     const inCart = cart
-        .filter(item => String(item.id) === String(product.id))
+        .filter(item => (item.cartId || item.id) === matchId)
         .reduce((sum, item) => sum + item.qty, 0);
-    return Math.max(0, (parseInt(product.quantity) || 0) - inCart);
+
+    return Math.max(0, baseQty - inCart);
 }
 
 function openModal(product, pushState = true) {
@@ -1361,6 +1385,53 @@ function openModal(product, pushState = true) {
     const existingColorDiv = els.modal.querySelector('.color-selection-container');
     if (existingColorDiv) existingColorDiv.remove();
 
+    // Reset stock display from previous product
+    const oldStockBadge = els.modal.querySelector('.stock-count-display');
+    if (oldStockBadge) oldStockBadge.remove();
+
+    // Initial Stock UI setup (base product)
+    window.updateModalStockUI = (remaining, totalBaseProductQty) => {
+        currentQty = remaining > 0 ? 1 : 0;
+        if (els.qtyInput) {
+            els.qtyInput.value = currentQty;
+            els.qtyInput.max = remaining;
+            els.qtyInput.disabled = (remaining <= 0);
+        }
+
+        if (remaining <= 0) {
+            if (els.addToCartBtn) els.addToCartBtn.disabled = true;
+            if (els.buyNowBtn) els.buyNowBtn.disabled = true;
+            if (els.mStockMsg) {
+                els.mStockMsg.classList.remove('hidden');
+                els.mStockMsg.innerText = remaining === 0 && totalBaseProductQty > 0 ? "All available stock is already in your cart!" : "This item/variant is currently out of stock.";
+            }
+        } else {
+            if (els.addToCartBtn) els.addToCartBtn.disabled = false;
+            if (els.buyNowBtn) els.buyNowBtn.disabled = false;
+            if (els.mStockMsg) els.mStockMsg.classList.add('hidden');
+        }
+
+        let stockBadge = els.modal.querySelector('.stock-count-display');
+        if (!stockBadge) {
+            stockBadge = document.createElement('div');
+            stockBadge.className = 'stock-count-display';
+            stockBadge.style.fontSize = '0.85rem';
+            stockBadge.style.color = '#1b5e20';
+            stockBadge.style.fontWeight = '600';
+            stockBadge.style.marginTop = '0.5rem';
+            stockBadge.style.padding = '4px 8px';
+            stockBadge.style.background = '#e8f5e9';
+            stockBadge.style.borderRadius = '4px';
+            stockBadge.style.display = 'inline-block';
+            const qtyCtrl = els.modal.querySelector('.qty-control');
+            if (qtyCtrl) qtyCtrl.parentElement.appendChild(stockBadge);
+        }
+        stockBadge.innerText = `Available Stock: ${remaining} units`;
+    };
+
+    // Show initial stock
+    updateModalStockUI(remaining, product.quantity);
+
     if (product.colors) {
         const colorContainer = document.createElement('div');
         colorContainer.className = 'color-selection-container';
@@ -1372,13 +1443,14 @@ function openModal(product, pushState = true) {
             const parts = c.split(':');
             return {
                 name: parts[0].trim(),
-                price: parts[1] ? parseFloat(parts[1].trim()) : null
+                price: parts[1] ? parseFloat(parts[1].trim()) || null : null,
+                quantity: parts[2] ? parseInt(parts[2].trim()) : null
             };
         }).filter(c => c.name);
 
         colorList.forEach((c, idx) => {
             const btn = document.createElement('button');
-            btn.className = 'color-btn'; // styling needed
+            btn.className = 'color-btn';
             btn.innerText = c.name;
             btn.style.border = '1px solid #ddd';
             btn.style.padding = '0.5rem 1rem';
@@ -1386,35 +1458,30 @@ function openModal(product, pushState = true) {
             btn.style.cursor = 'pointer';
             btn.style.background = 'white';
 
-            // Auto-select first?
-            // btn.classList.add('selected'); 
-
             btn.onclick = () => {
-                // Remove active class from all
                 optionsDiv.querySelectorAll('.color-btn').forEach(b => {
                     b.style.background = 'white';
                     b.style.color = 'black';
                     b.style.borderColor = '#ddd';
                 });
-                // Add active to clicked
-                btn.style.background = '#6366f1'; // Primary color
+                btn.style.background = '#6366f1';
                 btn.style.color = 'white';
                 btn.style.borderColor = '#6366f1';
 
-                // Update Price
                 if (c.price) {
                     els.mPrice.innerHTML = `LKR ${c.price.toLocaleString()}`;
                     currentModalProduct.currentPrice = c.price;
                 } else {
-                    // Reset to original logic
                     let priceHtml = `LKR ${product.price}`;
-                    if (product.hasOffer) {
-                        priceHtml = `<span class="price-old" style="font-size: 0.7em;">LKR ${product.originalPrice}</span> LKR ${product.price}`;
-                    }
+                    if (product.hasOffer) priceHtml = `<span class="price-old" style="font-size: 0.7em;">LKR ${product.originalPrice}</span> LKR ${product.price}`;
                     els.mPrice.innerHTML = priceHtml;
-                    currentModalProduct.currentPrice = product.price; // or original offer
+                    currentModalProduct.currentPrice = product.price;
                 }
                 currentModalProduct.selectedColor = c.name;
+
+                // Update Stock Display for this color
+                const remaining = getRemainingStock(product, c.name);
+                updateModalStockUI(remaining, product.quantity);
             };
 
             optionsDiv.appendChild(btn);
@@ -1529,7 +1596,7 @@ function formatSold(count) {
 
 // ... Cart Logic (Standard) ...
 function addToCart(product, qty) {
-    const remaining = getRemainingStock(product);
+    const remaining = getRemainingStock(product, product.selectedColor);
     if (remaining <= 0) {
         showToast("Maximum available stock reached.", "error");
         return;
