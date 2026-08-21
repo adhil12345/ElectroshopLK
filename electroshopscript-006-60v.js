@@ -2006,3 +2006,72 @@ function updateModalRatingUI(product) {
 
 init();
 
+
+async function applyProfessionalStyles() {
+  const container = document.querySelector('.account-nav');
+  const buttons = container.querySelectorAll('button');
+  
+  // 1. Define and inject professional CSS
+  const styleTag = document.createElement('style');
+  styleTag.textContent = `
+    .account-nav {
+      display: flex !important;
+      flex-direction: column;
+      gap: 8px;
+      padding: 16px;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+
+    .account-nav button {
+      all: unset;
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      color: #4b5563;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid transparent;
+    }
+
+    .account-nav button:hover {
+      background-color: #f3f4f6;
+      color: #1f2937;
+    }
+
+    /* The "Selected" / "Active" state using a professional Indigo theme */
+    .account-nav button.active {
+      background-color: #4f46e5;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    }
+    
+    .account-nav button:focus-visible {
+      outline: 2px solid #4f46e5;
+      outline-offset: 2px;
+    }
+  `;
+  document.head.appendChild(styleTag);
+
+  // 2. Add click interaction logic
+  buttons.forEach(btn => {
+    // Initial state check
+    if (btn.id === 'btn-tab-orders') btn.classList.add('active');
+
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      
+      // Optional: Add a subtle click animation
+      btn.style.transform = 'scale(0.98)';
+      setTimeout(() => btn.style.transform = 'scale(1)', 100);
+    });
+  });
+}
+
+await applyProfessionalStyles();
