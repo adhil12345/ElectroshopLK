@@ -64,26 +64,9 @@ body {
   color: white;
 }
 
-.btn-primary:disabled,
-.btn-secondary:disabled,
-.p-action:disabled,
-.color-btn:disabled {
-  background: #f1f1f1 !important;
-  color: #bbb !important;
-  cursor: not-allowed !important;
-  transform: none !important;
-  border-color: #eee !important;
-  opacity: 0.6;
-}
-
-.color-btn:disabled::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 5%;
-  width: 90%;
-  border-top: 1px solid #bbb;
-  transform: rotate(-15deg);
+.btn-primary:disabled {
+  background: #ccc;
+  cursor: not-allowed;
 }
 
 .large {
@@ -430,9 +413,14 @@ body {
   background: #e0e0e0;
 }
 
+.product-modal .modal-content {
+  padding: 2rem;
+}
+
 .product-split {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
 }
 
 .product-gallery {
@@ -441,11 +429,12 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 1.25rem;
 }
 
 .product-gallery img {
   max-width: 100%;
+  max-height: 350px;
   object-fit: contain;
   border-radius: 8px;
 }
@@ -488,28 +477,32 @@ body {
 }
 
 .product-info {
-  padding: 2rem;
+  padding: 1.25rem;
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
+  gap: 0.75rem;
 }
 
-.product-info h2 {
+#modal-title {
   font-family: var(--font-display);
-  font-size: 1.8rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
   line-height: 1.2;
+  margin-bottom: 0.5rem;
+  text-align: left;
 }
 
 .price-block {
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   color: var(--primary);
   font-weight: 800;
 }
 
 .modal-desc {
   color: var(--text-muted);
-  font-size: 0.95rem;
-  line-height: 1.6;
+  font-size: 0.9rem;
+  line-height: 1.5;
   max-height: 150px;
   overflow-y: auto;
 }
@@ -1101,292 +1094,46 @@ span#modal-price {
   font-weight: 700;
 }
 
-/* --- Customer Feedback --- */
-.reviews-section h3 {
-  font-family: var(--font-display);
-  font-size: 1.4rem;
-}
-
-.star-rating-input .star.active {
-  color: #f59e0b;
-  /* Golden star */
-}
-
-.star-rating-input .star:hover,
-.star-rating-input .star:hover~.star {
-  /* This logic is handled better via JS, but basic hover: */
-  transform: scale(1.1);
-}
-
-.review-card {
-  background: #fff;
-  border-bottom: 1px solid #f0f0f0;
-  padding: 1.5rem 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-}
-
-.review-card:last-child {
-  border-bottom: none;
-}
-
-.review-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.review-user {
-  font-weight: 700;
-  font-size: 0.95rem;
-}
-
-.review-date {
-  font-size: 0.8rem;
-  color: #999;
-}
-
-.review-stars {
-  color: #f59e0b;
-  font-size: 0.9rem;
-}
-
-.review-comment {
-  font-size: 0.9rem;
-  line-height: 1.5;
-  color: #444;
-}
-
-.review-images {
-  display: flex;
-  gap: 0.8rem;
-  margin-top: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.review-thumb {
-  width: 80px;
-  height: 80px;
-  object-fit: cover;
-  border-radius: 6px;
-  cursor: zoom-in;
-  transition: transform 0.2s;
-}
-
-.review-thumb:hover {
-  transform: scale(1.05);
-}
-
-.p-rating-badge {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: #fff9eb;
-  color: #f59e0b;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  width: fit-content;
-  margin-bottom: 0.4rem;
-}
-
-/* Review Photo Upload Previews */
-.upload-preview-item {
-  position: relative;
-  width: 60px;
-  height: 60px;
-}
-
-.upload-preview-item img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 4px;
-  border: 1px solid #ddd;
-}
-
-.upload-preview-remove {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  background: #f44336;
-  color: white;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
+/* Auth Modal Specifics */
+#auth-modal {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  cursor: pointer;
-  border: none;
+  height: auto;
+  max-height: 90vh;
+  overflow: visible;
+  background-color: transparent;
+  box-shadow: none;
 }
 
-@media (max-width: 600px) {
-  .product-split {
-    grid-template-columns: 1fr;
-  }
+.modal-content.auth-layout {
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  width: 100%;
+  position: relative;
+  text-align: center;
 }
 
-/* --- Frontend Toast --- */
-.frontend-toast-container {
-  position: fixed;
+.auth-layout .close-modal {
+  position: absolute;
   top: 20px;
   right: 20px;
-  z-index: 10000;
+  background: #f0f0f0;
+  width: 30px;
+  height: 30px;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  pointer-events: none;
-}
-
-.toast {
-  background: rgba(255, 255, 255, 0.95);
-  color: #1e293b;
-  padding: 12px 24px;
-  border-radius: 8px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  border-left: 4px solid #6366f1;
-  font-size: 0.9rem;
-  font-weight: 500;
-  pointer-events: auto;
-  animation: toastIn 0.3s ease-out forwards;
-  backdrop-filter: blur(8px);
-}
-
-.toast.error {
-  border-left-color: #ef4444;
-}
-
-.toast.info {
-  border-left-color: #3b82f6;
-}
-
-.toast.hide {
-  animation: toastOut 0.3s ease-in forwards;
-}
-
-@keyframes toastIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes toastOut {
-  from {
-    transform: translateX(0);
-    opacity: 1;
-  }
-
-  to {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-}
-
-/* --- Account Modal Responsive Styles --- */
-.account-modal .modal-content {
-  max-width: 800px;
-  height: 80vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.account-header {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 1rem;
-  margin-bottom: 1rem;
+  justify-content: center;
+  padding: 0;
 }
 
-.account-container {
-  display: flex;
-  gap: 2rem;
-  height: 100%;
-  overflow: hidden;
-}
+/* Review Form UI */
+.star-rating-input .star { color: #ddd; transition: color 0.2s; }
+.star-rating-input .star.active { color: #f59e0b !important; }
 
-.account-sidebar {
-  width: 250px;
-  border-right: 1px solid #eee;
-  padding-right: 1rem;
-  display: flex;
-  flex-direction: column;
-}
-
-.account-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.account-content {
-  flex-grow: 1;
-  overflow-y: auto;
-  padding-right: 5px;
-  /* Scrollbar space */
-}
-
-@media (max-width: 768px) {
-  .account-modal .modal-content {
-    height: 100vh;
-    width: 100%;
-    max-width: 100%;
-    border-radius: 0;
-    padding: 1rem;
-  }
-
-  .account-header {
-    padding-bottom: 0.5rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .account-container {
-    flex-direction: column;
-    overflow-y: auto;
-    gap: 1.5rem;
-    height: auto;
-  }
-
-  .account-sidebar {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid #eee;
-    padding-right: 0;
-    padding-bottom: 1rem;
-  }
-
-  .account-nav {
-    flex-direction: row;
-    overflow-x: auto;
-    gap: 0.5rem;
-    padding: 0.2rem 0;
-  }
-
-  .account-nav button {
-    white-space: nowrap;
-    flex: 1;
-    padding: 0.6rem 0.8rem !important;
-    font-size: 0.85rem !important;
-  }
-
-  #user-initial {
-    width: 50px !important;
-    height: 50px !important;
-    font-size: 1.2rem !important;
-  }
-
-  .account-content {
-    overflow-y: visible;
-  }
-}
+/* Review Images */
+.review-images { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
+.review-thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 1px solid #ddd; }
