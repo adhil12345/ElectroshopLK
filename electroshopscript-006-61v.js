@@ -2004,9 +2004,6 @@ function updateModalRatingUI(product) {
     els.mTitle.parentNode.insertBefore(ratingDiv, els.mTitle.nextSibling);
 }
 
-init();
-
-
 async function applyProfessionalStyles() {
   const container = document.querySelector('.account-nav');
   const buttons = container.querySelectorAll('button');
@@ -2075,3 +2072,7 @@ async function applyProfessionalStyles() {
 }
 
 await applyProfessionalStyles();
+init();
+
+
+
